@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: outsource_ats_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_change_in_production
+      MYSQL_DATABASE: outsource_ats_db
+      MYSQL_USER: ats_user
+      MYSQL_PASSWORD: ats_password_change_in_production
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docker/mysql-init:/docker-entrypoint-initdb.d
+    networks:
+      - ats_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Redis for caching and Celery
+  redis:
+    image: redis:7-alpine
+    container_name: outsource_ats_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ats_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # FastAPI Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: ../docker/Dockerfile.backend
+    container_name: outsource_ats_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=mysql+pymysql://ats_user:ats_password_change_in_production@mysql:3306/outsource_ats_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-secret-key-change-in-production-min-32-chars
+      - ENVIRONMENT=development
+      - DEBUG=true
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000
+    volumes:
+      - ./backend:/app
+      - backend_uploads:/app/uploads
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - ats_network
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: ../docker/Dockerfile.frontend
+    container_name: outsource_ats_frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000/api/v1
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - ats_network
+    command: npm run dev -- --host
+
+  # Celery Worker (for background tasks)
+  celery_worker:
+    build:
+      context: ./backend
+      dockerfile: ../docker/Dockerfile.backend
+    container_name: outsource_ats_celery_worker
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=mysql+pymysql://ats_user:ats_password_change_in_production@mysql:3306/outsource_ats_db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your-secret-key-change-in-production-min-32-chars
+      - ENVIRONMENT=development
+    volumes:
+      - ./backend:/app
+      - backend_uploads:/app/uploads
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - ats_network
+    command: celery -A app.core.celery_app worker --loglevel=info
+
+networks:
+  ats_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
+  backend_uploads:
