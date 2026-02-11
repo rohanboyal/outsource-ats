@@ -1,21 +1,39 @@
 """
-Authentication schemas for login, token, etc.
+Authentication schemas for request/response validation.
 """
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
-from datetime import datetime
-
 from app.core.permissions import UserRole
 
 
-# Login Schema
-class LoginRequest(BaseModel):
-    """Schema for login request."""
+# ============================================================================
+# USER SCHEMAS
+# ============================================================================
+
+class UserRegister(BaseModel):
+    """Schema for user registration."""
     email: EmailStr
-    password: str = Field(..., min_length=1)
+    password: str = Field(..., min_length=6)
+    full_name: str = Field(..., min_length=2)
+    role: UserRole = Field(default=UserRole.RECRUITER)
 
 
-# Token Response Schema
+class UserResponse(BaseModel):
+    """Schema for user response."""
+    id: int
+    email: str
+    full_name: str
+    role: UserRole
+    is_admin: bool
+    is_active: bool
+    
+    class Config:
+        from_attributes = True
+
+
+# ============================================================================
+# TOKEN SCHEMAS
+# ============================================================================
+
 class TokenResponse(BaseModel):
     """Schema for token response."""
     access_token: str
@@ -23,23 +41,6 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 
-# Token Refresh Schema
 class TokenRefresh(BaseModel):
-    """Schema for refreshing access token."""
+    """Schema for token refresh request."""
     refresh_token: str
-
-
-# Current User Response
-class CurrentUserResponse(BaseModel):
-    """Schema for current user information."""
-    id: int
-    email: EmailStr
-    full_name: str
-    phone: Optional[str] = None
-    role: UserRole
-    is_active: bool
-    is_verified: bool
-    last_login: Optional[datetime] = None
-    
-    class Config:
-        from_attributes = True
