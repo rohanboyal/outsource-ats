@@ -1,27 +1,26 @@
 """
-Authentication endpoints for login, logout, token refresh, etc.
+Authentication endpoints.
 """
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from datetime import datetime
 
 from app.db.session import get_db
+from app.models.user import User
+from app.schemas.auth import (
+    UserRegister,
+    UserResponse,
+    TokenResponse,
+    TokenRefresh,
+)
 from app.core.security import (
-    verify_password,
     get_password_hash,
+    verify_password,
     create_access_token,
     create_refresh_token,
     decode_token,
-    verify_token_type
+    verify_token_type,
 )
-from app.models.user import User
-from app.schemas.auth import (
-    LoginRequest,
-    TokenResponse,
-    TokenRefresh,
-    CurrentUserResponse
-)
-from app.schemas.user import UserCreate, UserResponse
 from app.api.deps import get_current_user
 
 
@@ -30,13 +29,11 @@ router = APIRouter()
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(
-    user_data: UserCreate,
+    user_data: UserRegister,
     db: Session = Depends(get_db)
 ):
     """
     Register a new user.
-    
-    Note: In production, you might want to restrict this or require admin approval.
     """
     # Check if user already exists
     existing_user = db.query(User).filter(User.email == user_data.email).first()
@@ -49,12 +46,11 @@ async def register(
     # Create new user
     new_user = User(
         email=user_data.email,
-        hashed_password=get_password_hash(user_data.password),
         full_name=user_data.full_name,
-        phone=user_data.phone,
         role=user_data.role,
-        is_active=True,
-        is_verified=False
+        hashed_password=get_password_hash(user_data.password),
+        # is_admin=(user_data.role == "admin"),
+        is_active=True
     )
     
     db.add(new_user)
@@ -66,19 +62,26 @@ async def register(
 
 @router.post("/login", response_model=TokenResponse)
 async def login(
-    login_data: LoginRequest,
+    form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
 ):
     """
     Login with email and password.
     
-    Returns access and refresh tokens.
+    Returns access token and refresh token.
     """
-    # Get user by email
-    user = db.query(User).filter(User.email == login_data.email).first()
+    # Find user by email (username field in OAuth2 form)
+    user = db.query(User).filter(User.email == form_data.username).first()
     
-    # Verify user exists and password is correct
-    if not user or not verify_password(login_data.password, user.hashed_password):
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Verify password
+    if not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",
@@ -89,33 +92,17 @@ async def login(
     if not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is inactive"
+            detail="Inactive user"
         )
-    
-    # Check if user is deleted
-    if user.is_deleted:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account has been deleted"
-        )
-    
-    # Update last login
-    user.last_login = datetime.utcnow()
-    db.commit()
     
     # Create tokens
-    token_data = {
-        "sub": str(user.id),
-        "email": user.email,
-        "role": user.role.value
-    }
-    
-    access_token = create_access_token(token_data)
-    refresh_token = create_refresh_token({"sub": str(user.id)})
+    access_token = create_access_token(data={"sub": str(user.id)})
+    refresh_token = create_refresh_token(data={"sub": str(user.id)})
     
     return TokenResponse(
         access_token=access_token,
-        refresh_token=refresh_token
+        refresh_token=refresh_token,
+        token_type="bearer"
     )
 
 
@@ -127,57 +114,59 @@ async def refresh_token(
     """
     Refresh access token using refresh token.
     """
-    # Decode refresh token
+    # Verify token type - FIX: Pass the token string, not the decoded payload
+    if not verify_token_type(token_data.refresh_token, "refresh"):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Decode token to get user ID
     payload = decode_token(token_data.refresh_token)
     
-    # Verify token type
-    verify_token_type(payload, "refresh")
-    
-    # Get user ID
-    user_id = payload.get("sub")
-    if not user_id:
+    if payload is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token"
+            detail="Invalid refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     
-    # Get user
+    user_id: str = payload.get("sub")
+    if user_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid refresh token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    # Get user from database - FIX: Convert string to int
     user = db.query(User).filter(User.id == int(user_id)).first()
-    if not user:
+    
+    if user is None or not user.is_active:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
-        )
-    
-    # Check if user is active
-    if not user.is_active or user.is_deleted:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is inactive or deleted"
+            detail="User not found or inactive",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     
     # Create new tokens
-    token_data = {
-        "sub": str(user.id),
-        "email": user.email,
-        "role": user.role.value
-    }
-    
-    access_token = create_access_token(token_data)
-    new_refresh_token = create_refresh_token({"sub": str(user.id)})
+    access_token = create_access_token(data={"sub": str(user.id)})
+    new_refresh_token = create_refresh_token(data={"sub": str(user.id)})
     
     return TokenResponse(
         access_token=access_token,
-        refresh_token=new_refresh_token
+        refresh_token=new_refresh_token,
+        token_type="bearer"
     )
 
 
-@router.get("/me", response_model=CurrentUserResponse)
+@router.get("/me", response_model=UserResponse)
 async def get_current_user_info(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Get current authenticated user's information.
+    Get current user information.
     """
     return current_user
 
@@ -187,12 +176,9 @@ async def logout(
     current_user: User = Depends(get_current_user)
 ):
     """
-    Logout user.
+    Logout current user.
     
-    Note: With JWT, logout is typically handled on the client side by removing tokens.
-    This endpoint is here for completeness and can be extended with token blacklisting.
+    Note: Since we're using JWT, actual logout should be handled client-side
+    by removing the tokens. This endpoint is here for consistency.
     """
-    return {
-        "message": "Successfully logged out",
-        "user_id": current_user.id
-    }
+    return {"message": "Successfully logged out"}
