@@ -19,7 +19,7 @@ from app.api.v1.endpoints import (
 api_router = APIRouter()
 
 # Include all endpoint routers
-api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
+api_router.include_router(auth.router, prefix="/auth", tags=["Authenticationssss"])
 api_router.include_router(clients.router, prefix="/clients", tags=["Clients"])
 api_router.include_router(candidates.router, prefix="/candidates", tags=["Candidates"])
 api_router.include_router(job_descriptions.router, prefix="/jds", tags=["Job Descriptions"])
