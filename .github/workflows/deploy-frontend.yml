@@ -1,0 +1,37 @@
+name: Deploy Frontend to EC2
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy Frontend via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            cd /home/ubuntu/outsource-ats
+
+            git fetch origin
+            git reset --hard origin/main
+
+            cd frontend
+
+            npm install
+            npm run build
+
+            sudo rm -rf /var/www/frontend/*
+            sudo cp -r build/* /var/www/frontend/
+
+            sudo systemctl reload nginx
