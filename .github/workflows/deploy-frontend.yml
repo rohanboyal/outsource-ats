@@ -21,6 +21,8 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           port: 22
           script: |
+            set -e
+
             cd /home/ubuntu/outsource-ats
 
             git fetch origin
@@ -31,7 +33,13 @@ jobs:
             npm install
             npm run build
 
+            sudo mkdir -p /var/www/frontend
             sudo rm -rf /var/www/frontend/*
-            sudo cp -r build/* /var/www/frontend/
+
+            # ✅ VITE OUTPUT
+            sudo cp -r dist/* /var/www/frontend/
+
+            sudo chown -R www-data:www-data /var/www/frontend
+            sudo chmod -R 755 /var/www/frontend
 
             sudo systemctl reload nginx
