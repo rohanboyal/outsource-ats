@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Search, Building2, Mail, Phone, Globe, Filter } from 'lucide-react';
+import { Plus, Search, Building2, Globe, Filter } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { clientsApi } from '../../api/clients';

@@ -2,7 +2,7 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft, Edit, Trash2, Building2, Globe, Mail, Phone } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, Globe } from 'lucide-react';
 
 import { clientsApi } from '../../api/clients';
 import { Button } from '../../components/ui/Button';
