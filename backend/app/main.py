@@ -20,6 +20,15 @@ app = FastAPI(
     redoc_url="/redoc" if settings.DEBUG else None,
 )
 
+# ✅ Allowed frontend origins
+origins = [
+    "http://ats.khuriwalgroup.com",
+    "https://ats.khuriwalgroup.com",
+
+    # optional (for local dev)
+    "http://localhost:3000",
+    "http://localhost:5173",
+]
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
