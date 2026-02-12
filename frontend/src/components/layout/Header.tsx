@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Menu, Bell, User, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
-import { cn } from '../../lib/utils';
+
 import { toast } from 'sonner';
 
 interface HeaderProps {
