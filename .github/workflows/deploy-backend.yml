@@ -25,7 +25,7 @@ jobs:
           script: |
             whoami
             hostname
-
+            mkdir -p /home/ubuntu/outsource-ats
             cd /home/ubuntu/outsource-ats
             git fetch origin
             git reset --hard origin/main
