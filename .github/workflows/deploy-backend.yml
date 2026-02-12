@@ -23,12 +23,28 @@ jobs:
           port: 22
           debug: true
           script: |
-            whoami
-            hostname
-            mkdir -p /home/ubuntu/outsource-ats
-            cd /home/ubuntu/outsource-ats
-            git fetch origin
-            git reset --hard origin/main
+            set -e
 
+            echo "User:"
+            whoami
+            echo "Host:"
+            hostname
+
+            APP_DIR=/home/ubuntu/outsource-ats
+            REPO_URL=https://github.com/rohanboyal/outsource-ats.git
+
+            mkdir -p $APP_DIR
+            cd $APP_DIR
+
+            if [ ! -d ".git" ]; then
+              echo "Repository not found. Cloning..."
+              git clone $REPO_URL .
+            else
+              echo "Repository found. Updating..."
+              git fetch origin
+              git reset --hard origin/main
+            fi
+
+            echo "Restarting backend service..."
             sudo systemctl restart ats
             sudo systemctl status ats --no-pager
