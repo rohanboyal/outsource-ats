@@ -1,19 +1,18 @@
 // src/pages/interviews/InterviewFormPage.tsx
-import { useEffect, useState } from 'react';
+import { useEffect, } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, Calendar } from 'lucide-react';
+import { ArrowLeft, Save,  } from 'lucide-react';
 
 import { interviewsApi, type CreateInterviewData } from '../../api/interviews';
 import { applicationsApi } from '../../api/applications';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
-import type { InterviewMode, InterviewStatus } from '../../types';
 
 // Validation schema
 const interviewSchema = z.object({
