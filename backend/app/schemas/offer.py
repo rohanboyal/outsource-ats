@@ -75,40 +75,28 @@ class OfferRevision(BaseModel):
     benefits: Optional[dict] = None
     revision_reason: str = Field(..., min_length=1)
 
-
 class OfferResponse(BaseModel):
-    """Schema for offer response."""
     id: int
-    offer_number: str
     application_id: int
-    
+    offer_number: str
     designation: str
-    annual_ctc: float
-    base_salary: Optional[float]
-    variable_pay: Optional[float]
-    bonus: Optional[float]
-    benefits: Optional[dict]
-    
-    joining_date: Optional[date]
-    offer_valid_till: Optional[date]
-    work_location: Optional[str]
-    
+
+    ctc_annual: float
+    fixed_component: float
+    variable_component: float
+
+    other_benefits: Optional[str]
+    joining_date_proposed: date
+    offer_valid_till: date
+
     status: OfferStatus
-    sent_date: Optional[date]
-    accepted_date: Optional[date]
-    rejected_date: Optional[date]
-    
-    version: int
-    parent_offer_id: Optional[int]
-    revision_reason: Optional[str]
-    
-    remarks: Optional[str]
-    
-    created_by: int
+    revision_number: int
+    notes: Optional[str]
+
     created_at: datetime
-    updated_at: datetime
-    
-    model_config = ConfigDict(from_attributes=True)
+
+    class Config:
+        from_attributes = True
 
 
 class OfferListResponse(BaseModel):

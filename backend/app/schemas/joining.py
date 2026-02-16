@@ -30,7 +30,7 @@ class JoiningBase(BaseModel):
     onboarding_status: Optional[dict] = None
     
     # Replacement
-    replacement_required: bool = Field(default=False)
+    # replacement_required: bool = Field(default=False)
     replacement_reason: Optional[str] = None
     
     # Notes
@@ -104,16 +104,15 @@ class JoiningResponse(BaseModel):
     
     status: JoiningStatus
     
-    documents_submitted: Optional[dict]
-    bgv_status: Optional[str]
-    bgv_completion_date: Optional[date]
+    # documents_submitted: Optional[dict]
+    # bgv_status: Optional[str]
+    # bgv_completion_date: Optional[date]
     
-    onboarding_status: Optional[dict]
+    # onboarding_status: Optional[dict]
     
-    replacement_required: bool
-    replacement_reason: Optional[str]
-    
-    remarks: Optional[str]
+    # replacement_required: bool
+    # replacement_reason: Optional[str]
+    notes: Optional[str]
     
     created_by: int
     created_at: datetime
