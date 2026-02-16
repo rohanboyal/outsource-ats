@@ -2,11 +2,11 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Calendar as CalendarIcon, List, Video, Phone, Users, Search, Filter } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, List, Video, Phone, Users, Filter } from 'lucide-react';
 
 import { interviewsApi } from '../../api/interviews';
 import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
+
 
 export function InterviewsListPage() {
   const navigate = useNavigate();
