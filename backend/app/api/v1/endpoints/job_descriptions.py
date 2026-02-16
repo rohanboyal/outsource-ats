@@ -42,10 +42,12 @@ def generate_jd_code(client_id: int, db: Session) -> str:
     client_prefix = client.company_name[:3].upper() if client else "JD"
     
     # Count existing JDs for this client
+    print(f"Generating JD code for client {client_id} with prefix {client_prefix}")
     count = db.query(JobDescription).filter(JobDescription.client_id == client_id).count()
+    print(f"Generating JD code for client {client_id} with prefix {client_prefix} and count {count}")
     
     # Generate code: CLIENT_XXX
-    return f"{client_prefix}_{count + 1:04d}"
+    return f"{client_prefix}_{count + 1:04d}_{datetime.utcnow().strftime('%Y%m%d%H%M%S')}"
 
 
 # ============================================================================

@@ -1,10 +1,10 @@
-// src/pages/candidates/CandidateDetailPage.tsx
+// src/pages/candidates/CandidateDetailPage.tsx - WITH RESUME DOWNLOAD
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { 
   ArrowLeft, Edit, Trash2, Mail, Phone, MapPin, 
-  Briefcase, Award, Calendar, DollarSign 
+  Briefcase, Award, Calendar, DollarSign, FileText, Download 
 } from 'lucide-react';
 
 import { candidatesApi } from '../../api/candidates';
@@ -90,6 +90,54 @@ export function CandidateDetailPage() {
           </Button>
         </div>
       </div>
+
+      {/* Resume Section */}
+      {candidate.resume_path && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Resume / CV
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <FileText className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium">Resume Document</p>
+                  <p className="text-sm text-muted-foreground">{candidate.resume_path}</p>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(`http://localhost:8000${candidate.resume_path}`, '_blank')}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  View
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const link = document.createElement('a');
+                    link.href = `http://localhost:8000${candidate.resume_path}`;
+                    link.download = `${candidate.first_name}_${candidate.last_name}_Resume.pdf`;
+                    link.click();
+                  }}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Contact Information */}
       <Card>

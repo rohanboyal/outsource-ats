@@ -1,12 +1,12 @@
-// src/pages/candidates/CandidateFormPage.tsx
-import { useEffect, useState } from 'react';
+// src/pages/candidates/CandidateFormPage.tsx - WITH RESUME UPLOAD
+import { useEffect, useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, X } from 'lucide-react';
+import { ArrowLeft, Save, X, Upload, FileText, Trash2 } from 'lucide-react';
 
 import { candidatesApi, type CreateCandidateData } from '../../api/candidates';
 import { Button } from '../../components/ui/Button';
@@ -37,11 +37,14 @@ export function CandidateFormPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const isEdit = !!id;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [skills, setSkills] = useState<string[]>([]);
   const [skillInput, setSkillInput] = useState('');
   const [preferredLocations, setPreferredLocations] = useState<string[]>([]);
   const [locationInput, setLocationInput] = useState('');
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [existingResumePath, setExistingResumePath] = useState<string | null>(null);
 
   // Fetch candidate if editing
   const { data: candidate, isLoading: isLoadingCandidate } = useQuery({
@@ -82,12 +85,22 @@ export function CandidateFormPage() {
       });
       setSkills(candidate.skills || []);
       setPreferredLocations(candidate.preferred_locations || []);
+      setExistingResumePath(candidate.resume_path || null);
     }
   }, [candidate, reset]);
 
   // Create mutation
   const createMutation = useMutation({
-    mutationFn: (data: CreateCandidateData) => candidatesApi.createCandidate(data),
+    mutationFn: async (data: CreateCandidateData) => {
+      const newCandidate = await candidatesApi.createCandidate(data);
+      
+      // Upload resume if provided
+      if (resumeFile && newCandidate.id) {
+        await candidatesApi.uploadResume(newCandidate.id, resumeFile);
+      }
+      
+      return newCandidate;
+    },
     onSuccess: () => {
       toast.success('Candidate created successfully');
       queryClient.invalidateQueries({ queryKey: ['candidates'] });
@@ -100,7 +113,16 @@ export function CandidateFormPage() {
 
   // Update mutation
   const updateMutation = useMutation({
-    mutationFn: (data: CreateCandidateData) => candidatesApi.updateCandidate(Number(id), data),
+    mutationFn: async (data: CreateCandidateData) => {
+      const updatedCandidate = await candidatesApi.updateCandidate(Number(id), data);
+      
+      // Upload resume if new file provided
+      if (resumeFile && id) {
+        await candidatesApi.uploadResume(Number(id), resumeFile);
+      }
+      
+      return updatedCandidate;
+    },
     onSuccess: () => {
       toast.success('Candidate updated successfully');
       queryClient.invalidateQueries({ queryKey: ['candidates'] });
@@ -150,6 +172,34 @@ export function CandidateFormPage() {
 
   const removeLocation = (location: string) => {
     setPreferredLocations(preferredLocations.filter((l) => l !== location));
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Validate file type
+      const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Please upload a PDF or Word document');
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error('File size must be less than 5MB');
+        return;
+      }
+      
+      setResumeFile(file);
+      toast.success('Resume selected');
+    }
+  };
+
+  const removeResume = () => {
+    setResumeFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const isLoading = createMutation.isPending || updateMutation.isPending;
@@ -217,6 +267,84 @@ export function CandidateFormPage() {
                 error={errors.phone?.message}
                 {...register('phone')}
               />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Resume Upload */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Resume / CV
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Existing Resume */}
+            {existingResumePath && !resumeFile && (
+              <div className="flex items-center justify-between p-3 border rounded-lg bg-muted/50">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Current Resume</p>
+                    <p className="text-xs text-muted-foreground">{existingResumePath}</p>
+                  </div>
+                </div>
+                <a
+                  href={`http://localhost:8000${existingResumePath}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline"
+                >
+                  View
+                </a>
+              </div>
+            )}
+
+            {/* New Resume Selected */}
+            {resumeFile && (
+              <div className="flex items-center justify-between p-3 border rounded-lg bg-primary/5 border-primary/20">
+                <div className="flex items-center gap-3">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">{resumeFile.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {(resumeFile.size / 1024).toFixed(2)} KB
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={removeResume}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Upload Button */}
+            <div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.doc,.docx"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                {resumeFile || existingResumePath ? 'Replace Resume' : 'Upload Resume'}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-2">
+                Supported formats: PDF, DOC, DOCX (Max 5MB)
+              </p>
             </div>
           </CardContent>
         </Card>

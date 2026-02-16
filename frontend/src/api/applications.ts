@@ -1,11 +1,11 @@
 // src/api/applications.ts
 import api from './axios';
-import type { Application } from '../types';
+import type { Application, ApplicationStatus } from '../types';
 
 export interface CreateApplicationData {
   candidate_id: number;
   jd_id: number;
-  status?: 'sourced' | 'screened' | 'submitted' | 'interviewing' | 'offered' | 'joined' | 'rejected' | 'withdrawn';
+  status?: ApplicationStatus;
   screening_notes?: string;
   internal_rating?: number;
 }
@@ -25,9 +25,10 @@ export const applicationsApi = {
   getApplications: async (params?: {
     page?: number;
     page_size?: number;
-    status?: string;
+    search?: string;
     jd_id?: number;
     candidate_id?: number;
+    status?: string;
   }): Promise<ApplicationsListResponse> => {
     const response = await api.get<ApplicationsListResponse>('/applications', { params });
     return response.data;
@@ -52,14 +53,14 @@ export const applicationsApi = {
   },
 
   // Update status
-  updateStatus: async (id: number, status: string, notes?: string): Promise<Application> => {
-    const response = await api.patch<Application>(`/applications/${id}/status`, { status, notes });
+  updateStatus: async (id: number, status: ApplicationStatus): Promise<Application> => {
+    const response = await api.patch<Application>(`/applications/${id}/status`, { status });
     return response.data;
   },
 
   // Submit to client
-  submitToClient: async (id: number, notes?: string): Promise<Application> => {
-    const response = await api.post<Application>(`/applications/${id}/submit`, { submission_notes: notes });
+  submitToClient: async (id: number): Promise<Application> => {
+    const response = await api.post<Application>(`/applications/${id}/submit`);
     return response.data;
   },
 
@@ -69,8 +70,8 @@ export const applicationsApi = {
   },
 
   // Get pipeline stats
-  getPipelineStats: async (): Promise<any> => {
-    const response = await api.get('/applications/stats/pipeline');
+  getPipelineStats: async (): Promise<Record<ApplicationStatus, number>> => {
+    const response = await api.get<Record<ApplicationStatus, number>>('/applications/stats/pipeline');
     return response.data;
   },
 };

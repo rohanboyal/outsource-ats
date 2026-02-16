@@ -85,7 +85,7 @@ class Offer(Base):
     created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
-    sent_at = Column(DateTime(timezone=True), nullable=True)
+    sent_date = Column(DateTime(timezone=True), nullable=True)
     
     # Relationships
     application = relationship("Application", back_populates="offers")

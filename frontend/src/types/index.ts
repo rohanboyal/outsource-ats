@@ -1,4 +1,4 @@
-// src/types/index.ts
+// src/types/index.ts - CORRECTED TO MATCH YOUR EXACT BACKEND
 
 // ============================================================================
 // USER & AUTH TYPES
@@ -84,14 +84,19 @@ export interface Pitch {
 }
 
 // ============================================================================
-// JOB DESCRIPTION TYPES
+// JOB DESCRIPTION TYPES - EXACT BACKEND MATCH
 // ============================================================================
 
-export interface JobDescription {
+export type ContractType = 'full_time' | 'contract' | 'part_time' | 'temp_to_perm';
+export type JDStatus = 'draft' | 'open' | 'on_hold' | 'closed';
+export type JDPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export interface JD {
   id: number;
   jd_code: string;
   client_id: number;
   pitch_id?: number;
+  assigned_recruiter_id?: number;
   title: string;
   description: string;
   required_skills?: string[];
@@ -100,14 +105,34 @@ export interface JobDescription {
   experience_max?: number;
   location?: string;
   work_mode?: string;
-  contract_type: 'full_time' | 'contract' | 'part_time' | 'temp_to_perm';
+  contract_type: ContractType;
   open_positions: number;
   filled_positions: number;
-  status: 'draft' | 'open' | 'on_hold' | 'closed';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: JDStatus;
+  priority: JDPriority;
+  sla_days?: number;
+  version: number;
+  parent_jd_id?: number;
+  budget_min?: number;
+  budget_max?: number;
+  currency?: string;
+  benefits?: string;
+  created_by: number;
   created_at: string;
   updated_at: string;
+  deleted_at?: string;
+  // Detail response extras
+  total_applications?: number;
+  active_applications?: number;
+  submitted_applications?: number;
+  interviewed_candidates?: number;
+  offers_extended?: number;
+  positions_filled?: number;
+  remaining_positions?: number;
 }
+
+// Alias
+export type JobDescription = JD;
 
 // ============================================================================
 // CANDIDATE TYPES
@@ -120,6 +145,7 @@ export interface Candidate {
   email: string;
   phone: string;
   current_company?: string;
+  resume_path?: string;
   current_designation?: string;
   total_experience?: number;
   skills?: string[];
@@ -138,7 +164,7 @@ export interface Candidate {
 // APPLICATION TYPES
 // ============================================================================
 
-export type ApplicationStatus = 
+export type ApplicationStatus =
   | 'sourced'
   | 'screened'
   | 'submitted'
@@ -197,55 +223,95 @@ export interface Interview {
 
 export type OfferStatus = 'draft' | 'sent' | 'negotiating' | 'accepted' | 'rejected' | 'expired' | 'superseded';
 
+
 export interface Offer {
   id: number;
   offer_number: string;
   application_id: number;
+
+  // Main fields
   designation: string;
-  annual_ctc: number;
+  ctc_annual: number;
   base_salary?: number;
   variable_pay?: number;
   bonus?: number;
   benefits?: Record<string, any>;
+
+  // Dates
   joining_date?: string;
+  offer_valid_till?: string;  // ✅ Added
+
+  // Additional fields
+  work_location?: string;  // ✅ Added
+  remarks?: string;  // ✅ Added
+
+  // Status fields
   status: OfferStatus;
   sent_date?: string;
   accepted_date?: string;
+  rejected_date?: string;
+
+  // Versioning
+  version: number;
+  parent_offer_id?: number;
+  revision_reason?: string;
+
+  // Metadata
+  created_by: number;
   created_at: string;
+  updated_at: string;
 }
+
 
 // ============================================================================
 // JOINING TYPES
 // ============================================================================
 
-export type JoiningStatus = 'confirmed' | 'joined' | 'no_show' | 'delayed' | 'cancelled';
+export type JoiningStatus = 'confirmed' | 'no_show' | 'delayed' | 'replacement_required';
 
 export interface Joining {
   id: number;
   application_id: number;
+  offer_id: number;  // ✅ Added - required in your DB
+  
+  // Dates
   expected_joining_date: string;
   actual_joining_date?: string;
+  
+  // Employee details
   employee_id?: string;
+  work_email?: string;  // ✅ Added
+  reporting_manager?: string;  // ✅ Added
+  
+  // Status
   status: JoiningStatus;
-  documents_submitted?: Record<string, boolean>;
-  bgv_status?: string;
-  onboarding_status?: Record<string, boolean>;
+  
+  // No show info
+  no_show_reason?: string;  // ✅ Added
+  no_show_date?: string;  // ✅ Added
+  
+  // Replacement info
+  replacement_window_days?: number;  // ✅ Added
+  replacement_initiated?: number;  // ✅ Added (0 or 1)
+  replacement_application_id?: number;  // ✅ Added
+  
+  // Documents & Onboarding
+  documents_collected?: Record<string, any>;  // ✅ Changed from documents_submitted
+  onboarding_status?: Record<string, any>;
+  
+  // BGV
+  bgv_status?: string;  // ✅ Added
+  bgv_completion_date?: string;  // ✅ Added
+  
+  // Notes
+  replacement_reason?: string;  // ✅ Added
+  remarks?: string;  // ✅ Added (called 'notes' in DB but schema uses 'remarks')
+  
+  // Metadata
+  replacement_required: boolean;  // ✅ Added
+  created_by: number;
   created_at: string;
+  updated_at: string;
 }
 
-// ============================================================================
-// API RESPONSE TYPES
-// ============================================================================
 
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  page_size: number;
-  pages: number;
-}
-
-export interface ApiError {
-  detail: string;
-  status_code?: number;
-}
