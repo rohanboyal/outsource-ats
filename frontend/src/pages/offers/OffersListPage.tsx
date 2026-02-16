@@ -10,7 +10,7 @@ import type { OfferStatus } from '../../types';
 export function OffersListPage() {
   const navigate = useNavigate();
   const [status, setStatus] = useState<string>('all');
-  const [page, setPage] = useState(1);
+  const [page] = useState(1);
 
   const { data, isLoading } = useQuery({
     queryKey: ['offers', { page, status: status === 'all' ? undefined : status }],
