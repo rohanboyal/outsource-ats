@@ -11,7 +11,6 @@ import {
 import { interviewsApi } from '../../api/interviews';
 import { Button } from '../../components/ui/Button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
-import { Input } from '../../components/ui/Input';
 import type { InterviewStatus, InterviewResult } from '../../types';
 
 export function InterviewDetailPage() {

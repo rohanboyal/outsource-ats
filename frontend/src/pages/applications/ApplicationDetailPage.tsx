@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import {
   ArrowLeft, Edit, Trash2, User, Briefcase, FileText, Star,
-  Calendar, TrendingUp, MessageSquare
+  MessageSquare
 } from 'lucide-react';
 
 import { applicationsApi } from '../../api/applications';
@@ -49,7 +49,7 @@ export function ApplicationDetailPage() {
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: (status: ApplicationStatus) => 
+    mutationFn: (status: ApplicationStatus) =>
       applicationsApi.updateStatus(Number(id), status),
     onSuccess: () => {
       toast.success('Status updated successfully');
@@ -134,11 +134,10 @@ export function ApplicationDetailPage() {
           {application.status}
         </span>
         {application.sla_status && (
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-            application.sla_status === 'on_track' ? 'bg-green-100 text-green-800' :
-            application.sla_status === 'at_risk' ? 'bg-yellow-100 text-yellow-800' :
-            'bg-red-100 text-red-800'
-          }`}>
+          <span className={`px-3 py-1 rounded-full text-xs font-medium ${application.sla_status === 'on_track' ? 'bg-green-100 text-green-800' :
+              application.sla_status === 'at_risk' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-red-100 text-red-800'
+            }`}>
             SLA: {application.sla_status.replace('_', ' ')}
           </span>
         )}
@@ -229,11 +228,10 @@ export function ApplicationDetailPage() {
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
-                    className={`h-5 w-5 ${
-                      i < application.internal_rating!
+                    className={`h-5 w-5 ${i < application.internal_rating!
                         ? 'fill-yellow-500 text-yellow-500'
                         : 'text-gray-300'
-                    }`}
+                      }`}
                   />
                 ))}
               </div>

@@ -64,7 +64,6 @@ export function JDFormPage() {
     handleSubmit,
     formState: { errors },
     reset,
-    setValue,
   } = useForm<JDFormData>({
     resolver: zodResolver(jdSchema),
     defaultValues: {
