@@ -62,26 +62,26 @@ export interface ClientContact {
   is_primary: boolean;
 }
 
-// ============================================================================
-// PITCH TYPES
-// ============================================================================
+// // ============================================================================
+// // PITCH TYPES
+// // ============================================================================
 
-export type PitchStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted';
+// export type PitchStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted';
 
-export interface Pitch {
-  id: number;
-  client_id: number;
-  title: string;
-  description: string;
-  proposed_roles?: any[];
-  rate_card?: Record<string, number>;
-  expected_start_date?: string;
-  expected_headcount?: number;
-  status: PitchStatus;
-  sent_date?: string;
-  approved_date?: string;
-  created_at: string;
-}
+// export interface Pitch {
+//   id: number;
+//   client_id: number;
+//   title: string;
+//   description: string;
+//   proposed_roles?: any[];
+//   rate_card?: Record<string, number>;
+//   expected_start_date?: string;
+//   expected_headcount?: number;
+//   status: PitchStatus;
+//   sent_date?: string;
+//   approved_date?: string;
+//   created_at: string;
+// }
 
 // ============================================================================
 // JOB DESCRIPTION TYPES - EXACT BACKEND MATCH
@@ -315,3 +315,38 @@ export interface Joining {
 }
 
 
+
+// ============================================================================
+// PITCH TYPES - MATCHES YOUR DATABASE EXACTLY
+// ============================================================================
+
+export type PitchStatus = 'draft' | 'sent' | 'approved' | 'rejected' | 'converted';
+
+export interface Pitch {
+  id: number;
+  client_id: number;
+  
+  // ✅ Using exact database column name
+  pitch_title: string;
+  description?: string;
+  
+  proposed_roles?: Array<Record<string, any>>;
+  rate_card?: Record<string, any>;
+  expected_headcount?: number;
+  
+  status: PitchStatus;
+  
+  // Dates
+  sent_date?: string;
+  decision_date?: string;
+  
+  // Notes
+  notes?: string;
+  rejection_reason?: string;
+  
+  // Metadata
+  created_by: number;
+  created_at: string;
+  updated_at: string;
+  deleted_at?: string;
+}

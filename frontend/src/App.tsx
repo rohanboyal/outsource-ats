@@ -40,14 +40,11 @@ import { JoiningsListPage } from './pages/joinings/JoiningsListPage';
 import { JoiningFormPage } from './pages/joinings/JoiningFormPage';
 import { JoiningDetailPage } from './pages/joinings/JoiningDetailPage';
 
-function PitchesListPage() {
-  return (
-    <div>
-      <h1 className="text-2xl font-bold mb-4">Pitches</h1>
-      <p className="text-muted-foreground">Pitch management coming soon...</p>
-    </div>
-  );
-}
+
+import { PitchesListPage } from './pages/pitches/PitchesListPage';
+import { PitchFormPage } from './pages/pitches/PitchFormPage';
+import { PitchDetailPage } from './pages/pitches/PitchDetailPage';
+
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
@@ -84,6 +81,10 @@ function App() {
             <Route path="/clients/:id/edit" element={<ClientFormPage />} />
 
             <Route path="/pitches" element={<PitchesListPage />} />
+            <Route path="/pitches/new" element={<PitchFormPage />} />
+            <Route path="/pitches/:id" element={<PitchDetailPage />} />
+            <Route path="/pitches/:id/edit" element={<PitchFormPage />} />
+
 
             <Route path="/jds" element={<JDsListPage />} />
             <Route path="/jds/new" element={<JDFormPage />} />
