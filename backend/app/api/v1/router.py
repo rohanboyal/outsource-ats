@@ -13,7 +13,8 @@ from app.api.v1.endpoints import (
     offers,
     joinings,
     pitches,
-    stats
+    stats,
+    notifications
 )
 
 # Create main API router
@@ -30,6 +31,7 @@ api_router.include_router(offers.router, prefix="/offers", tags=["Offers"])
 api_router.include_router(joinings.router, prefix="/joinings", tags=["Joinings"])
 api_router.include_router(pitches.router, prefix="/pitches", tags=["Pitches"])
 api_router.include_router(stats.router, prefix="/stats", tags=["Statistics"])
+api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
 
 # Future routers can be added here:
 # api_router.include_router(reports.router, prefix="/reports", tags=["Reports"])
