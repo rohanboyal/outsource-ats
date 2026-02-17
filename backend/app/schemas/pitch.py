@@ -1,5 +1,6 @@
 """
-Pitch schemas for request/response validation.
+Pitch schemas for request/response validation - FIXED TO MATCH DATABASE
+Replace: backend/app/schemas/pitch.py
 """
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, List
@@ -9,60 +10,43 @@ from app.models.pitch import PitchStatus
 
 
 # ============================================================================
-# PITCH SCHEMAS
+# PITCH SCHEMAS - MATCHING YOUR DATABASE
 # ============================================================================
 
 class PitchBase(BaseModel):
     """Base pitch schema."""
-    title: str = Field(..., min_length=1, max_length=255)
-    description: str = Field(..., min_length=10)
+    pitch_title: str = Field(..., min_length=1, max_length=255)  # ✅ Changed from 'title'
+    description: Optional[str] = None  # ✅ Made optional to match DB
     
-    # Proposed roles
-    proposed_roles: Optional[List[dict]] = Field(
-        default_factory=list,
-        description="List of roles being pitched"
-    )
+    # Proposed roles (JSON in DB)
+    proposed_roles: Optional[List[dict]] = None
     
-    # Rate card
-    rate_card: Optional[dict] = Field(
-        None,
-        description="Pricing information per role"
-    )
+    # Rate card (JSON in DB)
+    rate_card: Optional[dict] = None
     
-    # Timeline
-    expected_start_date: Optional[date] = None
+    # Headcount
     expected_headcount: Optional[int] = Field(None, ge=1)
     
     # Status
     status: PitchStatus = Field(default=PitchStatus.DRAFT)
     
-    # Additional info
-    special_requirements: Optional[str] = None
-    terms_conditions: Optional[str] = None
+    # Notes
     notes: Optional[str] = None
 
 
 class PitchCreate(PitchBase):
     """Schema for creating a pitch."""
     client_id: int = Field(..., gt=0)
-    bd_person_id: Optional[int] = Field(None, gt=0, description="BD/Sales person ID")
 
 
 class PitchUpdate(BaseModel):
     """Schema for updating pitch."""
-    title: Optional[str] = Field(None, min_length=1, max_length=255)
-    description: Optional[str] = Field(None, min_length=10)
-    
+    pitch_title: Optional[str] = Field(None, min_length=1, max_length=255)  # ✅ Changed from 'title'
+    description: Optional[str] = None
     proposed_roles: Optional[List[dict]] = None
     rate_card: Optional[dict] = None
-    
-    expected_start_date: Optional[date] = None
     expected_headcount: Optional[int] = Field(None, ge=1)
-    
     status: Optional[PitchStatus] = None
-    
-    special_requirements: Optional[str] = None
-    terms_conditions: Optional[str] = None
     notes: Optional[str] = None
 
 
@@ -74,51 +58,42 @@ class PitchStatusUpdate(BaseModel):
 
 class PitchSend(BaseModel):
     """Schema for sending pitch to client."""
-    sent_to_contact_id: Optional[int] = Field(None, description="Client contact ID")
     notes: Optional[str] = None
 
 
-class PitchFeedback(BaseModel):
-    """Schema for client feedback."""
-    feedback: str = Field(..., min_length=1)
-    client_response_date: Optional[date] = None
-
-
-class PitchConvert(BaseModel):
-    """Schema for converting pitch to JDs."""
-    selected_roles: List[dict] = Field(..., min_items=1, description="Roles to convert to JDs")
-    notes: Optional[str] = None
+class PitchReject(BaseModel):
+    """Schema for rejecting pitch."""
+    rejection_reason: str = Field(..., min_length=1)  # ✅ Uses actual DB field
 
 
 class PitchResponse(BaseModel):
-    """Schema for pitch response."""
+    """Schema for pitch response - MATCHES DATABASE EXACTLY."""
     id: int
     client_id: int
-    bd_person_id: Optional[int]
     
-    title: str
-    description: str
-    
+    # ✅ Using exact database column names
+    pitch_title: str
+    description: Optional[str]
     proposed_roles: Optional[List[dict]]
     rate_card: Optional[dict]
-    
-    expected_start_date: Optional[date]
     expected_headcount: Optional[int]
     
+    # Status
     status: PitchStatus
+    
+    # Dates - ✅ Only what exists in DB
     sent_date: Optional[date]
-    response_date: Optional[date]
-    approved_date: Optional[date]
-    rejected_date: Optional[date]
+    decision_date: Optional[date]
     
-    special_requirements: Optional[str]
-    terms_conditions: Optional[str]
-    client_feedback: Optional[str]
+    # Notes
     notes: Optional[str]
+    rejection_reason: Optional[str]
     
+    # Metadata
     created_by: int
     created_at: datetime
     updated_at: datetime
+    deleted_at: Optional[datetime]
     
     model_config = ConfigDict(from_attributes=True)
 
@@ -137,9 +112,6 @@ class PitchDetailResponse(PitchResponse):
     # Client info
     client_name: Optional[str] = None
     client_industry: Optional[str] = None
-    
-    # BD person info
-    bd_person_name: Optional[str] = None
     
     # Statistics
     total_jds_created: int = 0
@@ -160,15 +132,3 @@ class PitchStats(BaseModel):
     approval_rate: float = 0.0
     conversion_rate: float = 0.0
     average_response_days: float = 0.0
-
-
-class PitchRoleTemplate(BaseModel):
-    """Template for a role in pitch."""
-    title: str
-    description: str
-    headcount: int
-    experience_range: str
-    key_skills: List[str]
-    rate_per_month: Optional[float] = None
-    
-    model_config = ConfigDict(from_attributes=True)
