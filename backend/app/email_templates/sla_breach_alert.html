@@ -1,0 +1,71 @@
+{# backend/email_templates/sla_breach_alert.html #}
+{% extends "base.html" %}
+
+{% block title %}⚠️ SLA Breach Alert - Action Required{% endblock %}
+
+{% block content %}
+<p class="greeting">Dear {{ recruiter_name }},</p>
+
+<p class="body-text">
+  This is an urgent alert regarding <strong>{{ total_breached }} application(s)</strong>
+  that have breached their SLA deadline. Immediate action is required to address these cases.
+</p>
+
+<div class="alert-box danger">
+  <div class="alert-title">🚨 URGENT: SLA Breach Detected</div>
+  <div class="alert-text">
+    {{ total_breached }} application(s) have exceeded their SLA deadline.
+    Please take immediate action to update the status or contact the relevant parties.
+  </div>
+</div>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Candidate</th>
+      <th>Position</th>
+      <th>Client</th>
+      <th>SLA Deadline</th>
+      <th>Days Overdue</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for app in breached_applications %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td><strong>{{ app.candidate_name }}</strong></td>
+      <td>{{ app.position_title }}</td>
+      <td>{{ app.client_name }}</td>
+      <td>{{ app.sla_deadline }}</td>
+      <td>
+        <span class="badge badge-red">{{ app.days_overdue }} days</span>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="divider"></div>
+
+<p class="body-text">
+  Please log in to OutsourceATS immediately and take the necessary actions to resolve these SLA breaches.
+  Timely resolution is critical to maintaining our client commitments.
+</p>
+
+<div class="alert-box">
+  <div class="alert-title">📋 Steps to Resolve</div>
+  <div class="alert-text">
+    1. Log in to OutsourceATS<br/>
+    2. Navigate to Applications → Filter by SLA Breached<br/>
+    3. Update status or escalate each application<br/>
+    4. Notify the client if required
+  </div>
+</div>
+
+<p class="body-text" style="margin-top: 24px;">
+  Best regards,<br/>
+  <strong>{{ from_name }}</strong><br/>
+  <span style="color: #6b7a99; font-size: 13px;">OutsourceATS Automated Alert System</span>
+</p>
+{% endblock %}

@@ -1,0 +1,77 @@
+{# backend/email_templates/interview_reminder_interviewer.html #}
+{% extends "base.html" %}
+
+{% block title %}Interview Scheduled - {{ candidate_name }}{% endblock %}
+
+{% block content %}
+<p class="greeting">Dear {{ interviewer_name }},</p>
+
+<p class="body-text">
+  This is a reminder that you have an interview scheduled. Please review the candidate details below
+  and prepare your evaluation.
+</p>
+
+<div class="info-card">
+  <div class="info-row">
+    <span class="info-label">👤 Candidate</span>
+    <span class="info-value">{{ candidate_name }}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">💼 Position</span>
+    <span class="info-value">{{ position_title }}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">📋 Round</span>
+    <span class="info-value">{{ round_name }}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">📅 Date</span>
+    <span class="info-value">{{ interview_date }}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">⏰ Time</span>
+    <span class="info-value">{{ interview_time }}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">📍 Mode</span>
+    <span class="info-value">
+      <span class="badge badge-blue">{{ interview_mode | title }}</span>
+    </span>
+  </div>
+</div>
+
+{% if meeting_link %}
+<div style="text-align: center;">
+  <a href="{{ meeting_link }}" class="cta-button">🎥 Join Interview</a>
+</div>
+{% endif %}
+
+{% if resume_link %}
+<div style="text-align: center; margin-top: 12px;">
+  <a href="{{ resume_link }}" style="color: #2d6a9f; font-size: 14px; font-weight: 500;">
+    📄 Download Candidate Resume
+  </a>
+</div>
+{% endif %}
+
+<div class="alert-box">
+  <div class="alert-title">⚡ Action Required After Interview</div>
+  <div class="alert-text">
+    Please submit your feedback within 24 hours of the interview.
+    Your timely feedback helps us maintain SLA commitments to our clients.
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<p class="body-text">
+  If you have any questions or need to reschedule, please contact the recruitment team immediately.
+  Thank you for your time and participation.
+</p>
+
+<p class="body-text" style="margin-top: 24px;">
+  Best regards,<br/>
+  <strong>{{ from_name }}</strong><br/>
+  <span style="color: #6b7a99; font-size: 13px;">OutsourceATS Recruitment Team</span>
+</p>
+{% endblock %}

@@ -46,6 +46,10 @@ class Joining(Base):
         index=True
     )
     
+    # Background Verification (legacy-compatible)
+    # Keeping it nullable with an empty-string default to match existing DBs.
+    bgv_status = Column(String(50), nullable=True, default="")
+    
     # No Show Information
     no_show_reason = Column(Text, nullable=True)
     no_show_date = Column(Date, nullable=True)

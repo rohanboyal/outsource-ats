@@ -70,14 +70,11 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------
     # Email (Optional)
     # ------------------------------------------------------------------
-    MAIL_USERNAME: Optional[str] = None
-    MAIL_PASSWORD: Optional[str] = None
-    MAIL_FROM: str = "noreply@outsourceats.com"
-    MAIL_PORT: int = 587
-    MAIL_SERVER: str = "smtp.gmail.com"
-    MAIL_TLS: bool = True
-    MAIL_SSL: bool = False
-
+    EMAIL_USERNAME: str = "rohanb220303@gmail.com"
+    EMAIL_PASSWORD: str = "akxv vznm lwya esqn"
+    EMAIL_FROM: str = "rohanb220303@gmail.com"
+    EMAIL_FROM_NAME: str = "OutsourceATS"
+    EMAIL_ENABLED: bool = True
     # ------------------------------------------------------------------
     # Pagination
     # ------------------------------------------------------------------

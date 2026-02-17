@@ -1,0 +1,84 @@
+{# backend/email_templates/offer_notification.html #}
+{% extends "base.html" %}
+
+{% block title %}Congratulations! Job Offer - {{ position_title }}{% endblock %}
+
+{% block content %}
+<p class="greeting">Dear {{ candidate_name }},</p>
+
+<p class="body-text">
+  🎉 <strong>Congratulations!</strong> We are thrilled to inform you that
+  <strong>{{ company_name }}</strong> has extended a job offer for the position of
+  <strong>{{ position_title }}</strong>.
+  Please review the offer details below.
+</p>
+
+<div class="info-card">
+  <div class="info-row">
+    <span class="info-label">💼 Position</span>
+    <span class="info-value">{{ position_title }}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">🏢 Company</span>
+    <span class="info-value">{{ company_name }}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">💰 Annual CTC</span>
+    <span class="info-value" style="color: #2e7d32; font-size: 16px;">
+      ₹ {{ annual_ctc }}
+    </span>
+  </div>
+  {% if joining_date %}
+  <div class="info-row">
+    <span class="info-label">📅 Expected Joining Date</span>
+    <span class="info-value">{{ joining_date }}</span>
+  </div>
+  {% endif %}
+  {% if offer_valid_till %}
+  <div class="info-row">
+    <span class="info-label">⏳ Offer Valid Till</span>
+    <span class="info-value">
+      <span class="badge badge-orange">{{ offer_valid_till }}</span>
+    </span>
+  </div>
+  {% endif %}
+</div>
+
+<div class="alert-box">
+  <div class="alert-title">⏰ Action Required</div>
+  <div class="alert-text">
+    Please review this offer carefully and respond to your recruiter 
+    <strong>{{ recruiter_name }}</strong> ({{ recruiter_email }}) at the earliest.
+    {% if offer_valid_till %}
+    This offer is valid until <strong>{{ offer_valid_till }}</strong>.
+    {% endif %}
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<p class="body-text">
+  To accept or discuss this offer, please contact your recruiter directly:
+</p>
+
+<div class="info-card" style="margin-top: 12px;">
+  <div class="info-row">
+    <span class="info-label">👤 Your Recruiter</span>
+    <span class="info-value">{{ recruiter_name }}</span>
+  </div>
+  <div class="info-row">
+    <span class="info-label">📧 Email</span>
+    <span class="info-value">{{ recruiter_email }}</span>
+  </div>
+</div>
+
+<p class="body-text">
+  We look forward to welcoming you on board. Congratulations once again on this exciting opportunity!
+</p>
+
+<p class="body-text" style="margin-top: 24px;">
+  Best regards,<br/>
+  <strong>{{ from_name }}</strong><br/>
+  <span style="color: #6b7a99; font-size: 13px;">OutsourceATS Recruitment Team</span>
+</p>
+{% endblock %}
