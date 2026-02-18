@@ -14,7 +14,9 @@ from app.api.v1.endpoints import (
     joinings,
     pitches,
     stats,
-    notifications
+    notifications,
+    client_portal,
+    client_users_admin
 )
 
 # Create main API router
@@ -32,7 +34,8 @@ api_router.include_router(joinings.router, prefix="/joinings", tags=["Joinings"]
 api_router.include_router(pitches.router, prefix="/pitches", tags=["Pitches"])
 api_router.include_router(stats.router, prefix="/stats", tags=["Statistics"])
 api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
-
+api_router.include_router(client_portal.router, prefix="/client-portal", tags=["Client Portal"])
+api_router.include_router(client_users_admin.router, prefix="/admin", tags=["Admin"])
 # Future routers can be added here:
 # api_router.include_router(reports.router, prefix="/reports", tags=["Reports"])
 # api_router.include_router(dashboard.router, prefix="/dashboard", tags=["Dashboard"])

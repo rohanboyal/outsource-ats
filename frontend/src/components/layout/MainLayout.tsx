@@ -1,11 +1,19 @@
-// src/components/layout/MainLayout.tsx
+// src/components/layout/MainLayout.tsx - FIXED WITH CLIENT GUARD
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { useAuthStore } from '../../store/authStore';
 
 export function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user } = useAuthStore();
+
+  // ✅ FIX: Prevent clients from accessing main layout
+  // Redirect them to their client portal instead
+  if (user?.role === 'client') {
+    return <Navigate to="/client/dashboard" replace />;
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
