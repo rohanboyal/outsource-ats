@@ -1,4 +1,4 @@
-// src/pages/auth/LoginPage.tsx
+// src/pages/auth/LoginPage.tsx - FIXED WITH CLIENT REDIRECT
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -55,8 +55,12 @@ export function LoginPage() {
       // Success notification
       toast.success(`Welcome back, ${user.full_name}!`);
 
-      // Navigate to dashboard
-      navigate('/dashboard');
+      // ✅ FIX: Redirect based on user role
+      if (user.role === 'client') {
+        navigate('/client/dashboard', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (error: any) {
       console.error('Login error:', error);
 

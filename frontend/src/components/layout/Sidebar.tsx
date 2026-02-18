@@ -1,38 +1,24 @@
-// src/components/layout/Sidebar.tsx
+// src/components/layout/Sidebar.tsx - REBRANDED TO KGF HireX
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Building2, 
-  Briefcase, 
-  FileText, 
-  Users, 
-  Calendar, 
-  FileCheck, 
-  UserCheck,
-  PresentationIcon,
-  X
-} from 'lucide-react';
+import { X } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useAuthStore } from '../../store/authStore';
+import { getNavigationForRole, ROLE_LABELS } from '../../config/roleConfig';
+import type { UserRole } from '../../types';
 
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Clients', href: '/clients', icon: Building2 },
-  { name: 'Pitches', href: '/pitches', icon: PresentationIcon },
-  { name: 'Job Descriptions', href: '/jds', icon: FileText },
-  { name: 'Candidates', href: '/candidates', icon: Users },
-  { name: 'Applications', href: '/applications', icon: Briefcase },
-  { name: 'Interviews', href: '/interviews', icon: Calendar },
-  { name: 'Offers', href: '/offers', icon: FileCheck },
-  { name: 'Joinings', href: '/joinings', icon: UserCheck },
-];
-
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
+  const { user } = useAuthStore();
+  
+  // Get navigation items filtered by user role
+  const navigation = user?.role 
+    ? getNavigationForRole(user.role as UserRole)
+    : [];
 
   return (
     <>
@@ -52,13 +38,15 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         )}
       >
         <div className="flex h-full flex-col">
-          {/* Logo */}
+          {/* Logo - ✅ UPDATED TO KGF HireX */}
           <div className="flex h-16 items-center justify-between px-6 border-b border-border">
             <Link to="/dashboard" className="flex items-center space-x-2">
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-lg">O</span>
+                <span className="text-primary-foreground font-bold text-lg">K</span>
               </div>
-              <span className="text-xl font-bold">OutsourceATS</span>
+              <span className="text-xl font-bold">
+                KGF <span className="text-primary">HireX</span>
+              </span>
             </Link>
             <button
               onClick={onClose}
@@ -67,6 +55,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               <X className="h-5 w-5" />
             </button>
           </div>
+
+          {/* User Role Badge */}
+          {user?.role && (
+            <div className="px-6 py-3 border-b border-border bg-muted/30">
+              <p className="text-xs text-muted-foreground">Logged in as</p>
+              <p className="text-sm font-semibold text-foreground">
+                {ROLE_LABELS[user.role as UserRole]}
+              </p>
+            </div>
+          )}
 
           {/* Navigation */}
           <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
@@ -91,6 +89,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                 </Link>
               );
             })}
+
+            {/* Show message if no navigation items */}
+            {navigation.length === 0 && (
+              <div className="px-3 py-4 text-sm text-muted-foreground text-center">
+                No menu items available for your role.
+              </div>
+            )}
           </nav>
 
           {/* Footer */}

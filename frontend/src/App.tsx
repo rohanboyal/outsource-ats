@@ -1,4 +1,4 @@
-// src/App.tsx
+// src/App.tsx - WITH ROLE-BASED ROUTING
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryProvider } from './providers/QueryProvider';
 import { Toaster } from 'sonner';
@@ -6,6 +6,7 @@ import { useAuthStore } from './store/authStore';
 
 import { AuthLayout } from './components/layout/AuthLayout';
 import { MainLayout } from './components/layout/MainLayout';
+import { ProtectedRoute, AdminRoute, ClientRoute } from './components/auth/ProtectedRoute';
 
 import { LoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
@@ -40,16 +41,26 @@ import { JoiningsListPage } from './pages/joinings/JoiningsListPage';
 import { JoiningFormPage } from './pages/joinings/JoiningFormPage';
 import { JoiningDetailPage } from './pages/joinings/JoiningDetailPage';
 
-
 import { PitchesListPage } from './pages/pitches/PitchesListPage';
 import { PitchFormPage } from './pages/pitches/PitchFormPage';
 import { PitchDetailPage } from './pages/pitches/PitchDetailPage';
 
+import { ClientLayout } from './pages/client/ClientLayout';
+import { ClientDashboardPage } from './pages/client/ClientDashboardPage';
+import { ClientCandidatesPage } from './pages/client/ClientCandidatesPage';
+import { ClientJDsPage } from './pages/client/ClientJDsPage';
+import { ClientInterviewsPage } from './pages/client/ClientInterviewsPage';
+import { ManageClientUsersPage } from './pages/admin/ManageClientUsersPage';
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
-  return <>{children}</>;
+// Smart redirect based on user role
+function RoleBasedRedirect() {
+  const { user } = useAuthStore();
+  
+  if (user?.role === 'client') {
+    return <Navigate to="/client/dashboard" replace />;
+  }
+  
+  return <Navigate to="/dashboard" replace />;
 }
 
 function App() {
@@ -57,68 +68,211 @@ function App() {
     <QueryProvider>
       <BrowserRouter>
         <Routes>
-
           {/* PUBLIC ROUTES */}
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
           </Route>
 
-          {/* PROTECTED ROUTES */}
-          <Route
-            element={
-              <ProtectedRoute>
-                <MainLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-
-            <Route path="/clients" element={<ClientsListPage />} />
-            <Route path="/clients/new" element={<ClientFormPage />} />
-            <Route path="/clients/:id" element={<ClientDetailPage />} />
-            <Route path="/clients/:id/edit" element={<ClientFormPage />} />
-
-            <Route path="/pitches" element={<PitchesListPage />} />
-            <Route path="/pitches/new" element={<PitchFormPage />} />
-            <Route path="/pitches/:id" element={<PitchDetailPage />} />
-            <Route path="/pitches/:id/edit" element={<PitchFormPage />} />
-
-
-            <Route path="/jds" element={<JDsListPage />} />
-            <Route path="/jds/new" element={<JDFormPage />} />
-            <Route path="/jds/:id" element={<JDDetailPage />} />
-            <Route path="/jds/:id/edit" element={<JDFormPage />} />
-
-            <Route path="/candidates" element={<CandidatesListPage />} />
-            <Route path="/candidates/new" element={<CandidateFormPage />} />
-            <Route path="/candidates/:id" element={<CandidateDetailPage />} />
-            <Route path="/candidates/:id/edit" element={<CandidateFormPage />} />
-
-            <Route path="/applications" element={<ApplicationsListPage />} />
-            <Route path="/applications/new" element={<ApplicationFormPage />} />
-            <Route path="/applications/:id" element={<ApplicationDetailPage />} />
-            <Route path="/applications/:id/edit" element={<ApplicationFormPage />} />
-
-            <Route path="/interviews" element={<InterviewsListPage />} />
-            <Route path="/interviews/new" element={<InterviewFormPage />} />
-            <Route path="/interviews/:id" element={<InterviewDetailPage />} />
-            <Route path="/interviews/:id/edit" element={<InterviewFormPage />} />
-
-            <Route path="/offers" element={<OffersListPage />} />
-            <Route path="/offers/new" element={<OfferFormPage />} />
-            <Route path="/offers/:id" element={<OfferDetailPage />} />
-            <Route path="/offers/:id/edit" element={<OfferFormPage />} />
-
-            <Route path="/joinings" element={<JoiningsListPage />} />
-            <Route path="/joinings/new" element={<JoiningFormPage />} />
-            <Route path="/joinings/:id" element={<JoiningDetailPage />} />
-            <Route path="/joinings/:id/edit" element={<JoiningFormPage />} />
-
-            <Route path="*" element={<Navigate to="/" replace />} />
+          {/* CLIENT PORTAL - Separate Routes */}
+          <Route path="/client" element={
+            <ClientRoute>
+              <ClientLayout />
+            </ClientRoute>
+          }>
+            <Route index element={<Navigate to="/client/dashboard" replace />} />
+            <Route path="dashboard" element={<ClientDashboardPage />} />
+            <Route path="candidates" element={<ClientCandidatesPage />} />
+            <Route path="jds" element={<ClientJDsPage />} />
+            <Route path="interviews" element={<ClientInterviewsPage />} />
           </Route>
 
+          {/* MAIN APP - Protected Routes */}
+          <Route element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }>
+            <Route path="/" element={<RoleBasedRedirect />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+
+            {/* Clients - Admin, Account Manager, BD/Sales, Finance */}
+            <Route path="/clients" element={
+              <ProtectedRoute allowedRoles={['admin', 'account_manager', 'bd_sales', 'finance']}>
+                <ClientsListPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/clients/new" element={
+              <ProtectedRoute allowedRoles={['admin', 'account_manager', 'bd_sales']}>
+                <ClientFormPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/clients/:id" element={
+              <ProtectedRoute allowedRoles={['admin', 'account_manager', 'bd_sales', 'finance']}>
+                <ClientDetailPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/clients/:id/edit" element={
+              <ProtectedRoute allowedRoles={['admin', 'account_manager', 'bd_sales']}>
+                <ClientFormPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Pitches - Admin, Account Manager, BD/Sales */}
+            <Route path="/pitches" element={
+              <ProtectedRoute allowedRoles={['admin', 'account_manager', 'bd_sales']}>
+                <PitchesListPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/pitches/new" element={
+              <ProtectedRoute allowedRoles={['admin', 'account_manager', 'bd_sales']}>
+                <PitchFormPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/pitches/:id" element={
+              <ProtectedRoute allowedRoles={['admin', 'account_manager', 'bd_sales']}>
+                <PitchDetailPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/pitches/:id/edit" element={
+              <ProtectedRoute allowedRoles={['admin', 'account_manager', 'bd_sales']}>
+                <PitchFormPage />
+              </ProtectedRoute>
+            } />
+
+            {/* JDs - All except Client */}
+            <Route path="/jds" element={<JDsListPage />} />
+            <Route path="/jds/new" element={
+              <ProtectedRoute allowedRoles={['admin', 'account_manager']}>
+                <JDFormPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/jds/:id" element={<JDDetailPage />} />
+            <Route path="/jds/:id/edit" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <JDFormPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Candidates - Admin, Recruiter, Account Manager */}
+            <Route path="/candidates" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <CandidatesListPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/candidates/new" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <CandidateFormPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/candidates/:id" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <CandidateDetailPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/candidates/:id/edit" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <CandidateFormPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Applications - Admin, Recruiter, Account Manager, Finance */}
+            <Route path="/applications" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager', 'finance']}>
+                <ApplicationsListPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/applications/new" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <ApplicationFormPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/applications/:id" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager', 'finance']}>
+                <ApplicationDetailPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/applications/:id/edit" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <ApplicationFormPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Interviews - Admin, Recruiter, Account Manager, Finance */}
+            <Route path="/interviews" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager', 'finance']}>
+                <InterviewsListPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/interviews/new" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <InterviewFormPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/interviews/:id" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager', 'finance']}>
+                <InterviewDetailPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/interviews/:id/edit" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <InterviewFormPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Offers - Admin, Recruiter, Account Manager, Finance */}
+            <Route path="/offers" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager', 'finance']}>
+                <OffersListPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/offers/new" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <OfferFormPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/offers/:id" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager', 'finance']}>
+                <OfferDetailPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/offers/:id/edit" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <OfferFormPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Joinings - Admin, Recruiter, Account Manager, Finance */}
+            <Route path="/joinings" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager', 'finance']}>
+                <JoiningsListPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/joinings/new" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <JoiningFormPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/joinings/:id" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager', 'finance']}>
+                <JoiningDetailPage />
+              </ProtectedRoute>
+            } />
+            <Route path="/joinings/:id/edit" element={
+              <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
+                <JoiningFormPage />
+              </ProtectedRoute>
+            } />
+
+            {/* Admin Only - Client Users Management */}
+            <Route path="/admin/client-users" element={
+              <AdminRoute>
+                <ManageClientUsersPage />
+              </AdminRoute>
+            } />
+
+            <Route path="*" element={<RoleBasedRedirect />} />
+          </Route>
         </Routes>
       </BrowserRouter>
 

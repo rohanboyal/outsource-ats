@@ -1,5 +1,6 @@
 """
-Permission definitions for RBAC system.
+Permission definitions for RBAC system - FIXED VERSION
+Replace your backend/app/core/permissions.py with this file
 """
 from enum import Enum
 
@@ -12,6 +13,7 @@ class Permission(str, Enum):
     # ============================================================================
     # USER MANAGEMENT
     # ============================================================================
+    MANAGE_USERS = "manage_users"
     CREATE_USER = "create_user"
     VIEW_USER = "view_user"
     UPDATE_USER = "update_user"
@@ -108,10 +110,11 @@ class UserRole(str, Enum):
     CLIENT = "client"
 
 
-# Role-based permission mappings
+# Role-based permission mappings - FIXED
 ROLE_PERMISSIONS = {
     UserRole.ADMIN: [
-        # Admin has all permissions
+        # Admin has ALL permissions
+        Permission.MANAGE_USERS,  # ✅ ADDED
         Permission.CREATE_USER,
         Permission.VIEW_USER,
         Permission.UPDATE_USER,
@@ -172,7 +175,7 @@ ROLE_PERMISSIONS = {
     ],
     
     UserRole.RECRUITER: [
-        # Recruiter: Focus on candidates and applications
+        # Recruiter: Core recruitment operations
         Permission.VIEW_CLIENT,
         
         Permission.VIEW_PITCH,
@@ -195,15 +198,20 @@ ROLE_PERMISSIONS = {
         Permission.UPDATE_INTERVIEW,
         Permission.SUBMIT_FEEDBACK,
         
+        Permission.CREATE_OFFER,  # ✅ ADDED - Recruiters create offers
         Permission.VIEW_OFFER,
+        Permission.UPDATE_OFFER,  # ✅ ADDED
+        Permission.SEND_OFFER,  # ✅ ADDED
         
+        Permission.CREATE_JOINING,  # ✅ ADDED
         Permission.VIEW_JOINING,
+        Permission.UPDATE_JOINING,  # ✅ ADDED - Recruiters manage joinings
         
         Permission.VIEW_REPORTS,
     ],
     
     UserRole.ACCOUNT_MANAGER: [
-        # Account Manager: Client relationships and JDs
+        # Account Manager: Client relationships + recruitment oversight
         Permission.CREATE_CLIENT,
         Permission.VIEW_CLIENT,
         Permission.UPDATE_CLIENT,
@@ -212,34 +220,45 @@ ROLE_PERMISSIONS = {
         Permission.VIEW_PITCH,
         Permission.UPDATE_PITCH,
         Permission.SEND_PITCH,
+        Permission.APPROVE_PITCH,  # ✅ Can approve pitches
         
         Permission.CREATE_JD,
         Permission.VIEW_JD,
         Permission.UPDATE_JD,
         Permission.ASSIGN_JD,
         
+        Permission.CREATE_CANDIDATE,  # ✅ ADDED
         Permission.VIEW_CANDIDATE,
+        Permission.UPDATE_CANDIDATE,  # ✅ ADDED
         
+        Permission.CREATE_APPLICATION,  # ✅ ADDED
         Permission.VIEW_APPLICATION,
+        Permission.UPDATE_APPLICATION,  # ✅ ADDED
         Permission.SUBMIT_APPLICATION,
         
+        Permission.CREATE_INTERVIEW,  # ✅ ADDED - Can coordinate interviews
         Permission.VIEW_INTERVIEW,
+        Permission.UPDATE_INTERVIEW,  # ✅ ADDED
+        Permission.SUBMIT_FEEDBACK,  # ✅ ADDED
         
-        Permission.VIEW_OFFER,
         Permission.CREATE_OFFER,
+        Permission.VIEW_OFFER,
         Permission.UPDATE_OFFER,
         Permission.SEND_OFFER,
         
+        Permission.CREATE_JOINING,  # ✅ ADDED
         Permission.VIEW_JOINING,
+        Permission.UPDATE_JOINING,  # ✅ ADDED
         
         Permission.VIEW_REPORTS,
         Permission.VIEW_ANALYTICS,
     ],
     
     UserRole.BD_SALES: [
-        # BD/Sales: Business development and pitches
-        Permission.VIEW_CLIENT,
+        # BD/Sales: Business development focus
         Permission.CREATE_CLIENT,
+        Permission.VIEW_CLIENT,
+        Permission.UPDATE_CLIENT,  # ✅ ADDED - Can update prospects
         
         Permission.CREATE_PITCH,
         Permission.VIEW_PITCH,
@@ -253,6 +272,7 @@ ROLE_PERMISSIONS = {
         Permission.VIEW_APPLICATION,
         
         Permission.VIEW_REPORTS,
+        Permission.VIEW_ANALYTICS,  # ✅ ADDED - Need sales metrics
     ],
     
     UserRole.FINANCE: [
@@ -267,6 +287,8 @@ ROLE_PERMISSIONS = {
         
         Permission.VIEW_APPLICATION,
         
+        Permission.VIEW_INTERVIEW,  # ✅ ADDED - Verify interviews happened
+        
         Permission.VIEW_OFFER,
         
         Permission.VIEW_JOINING,
@@ -276,7 +298,7 @@ ROLE_PERMISSIONS = {
     ],
     
     UserRole.CLIENT: [
-        # Client: Limited view access
+        # Client: Limited view + feedback capabilities
         Permission.VIEW_JD,
         
         Permission.VIEW_CANDIDATE,
@@ -284,6 +306,7 @@ ROLE_PERMISSIONS = {
         Permission.VIEW_APPLICATION,
         
         Permission.VIEW_INTERVIEW,
+        Permission.SUBMIT_FEEDBACK,  # ✅ Clients can give interview feedback
     ],
 }
 

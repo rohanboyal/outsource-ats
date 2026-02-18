@@ -1,6 +1,7 @@
-// src/pages/dashboard/DashboardPage.tsx - ENHANCED WITH REAL DATA
+// src/pages/dashboard/DashboardPage.tsx - FIXED WITH PERMISSION-BASED QUICK ACTIONS
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/authStore';
+import { usePermissions } from '../../hooks/usePermissions';  // ✅ ADDED
 import { statsApi } from '../../api/stats';
 import { StatCard } from '../../components/ui/StatCard';
 import {
@@ -23,6 +24,7 @@ import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, L
 
 export function DashboardPage() {
   const { user } = useAuthStore();
+  const { can } = usePermissions();  // ✅ ADDED
   const navigate = useNavigate();
 
   // Fetch real data
@@ -131,12 +133,29 @@ export function DashboardPage() {
     },
   ] : [];
 
+  // ✅ FIXED: Quick actions with permission checks
   const quickActions = [
-    { label: 'Add Client', onClick: () => navigate('/clients/new') },
-    { label: 'Create JD', onClick: () => navigate('/jds/new') },
-    { label: 'Add Candidate', onClick: () => navigate('/candidates/new') },
-    { label: 'New Pitch', onClick: () => navigate('/pitches/new') },
-  ];
+    { 
+      label: 'Add Client', 
+      onClick: () => navigate('/clients/new'),
+      show: can('CREATE_CLIENT')
+    },
+    { 
+      label: 'Create JD', 
+      onClick: () => navigate('/jds/new'),
+      show: can('CREATE_JD')
+    },
+    { 
+      label: 'Add Candidate', 
+      onClick: () => navigate('/candidates/new'),
+      show: can('CREATE_CANDIDATE')
+    },
+    { 
+      label: 'New Pitch', 
+      onClick: () => navigate('/pitches/new'),
+      show: can('CREATE_PITCH')
+    },
+  ].filter(action => action.show);  // ✅ Filter out hidden actions
 
   // Prepare pipeline data for chart
   const pipelineData = pipeline ? [
@@ -160,19 +179,21 @@ export function DashboardPage() {
         </p>
       </div>
 
-      {/* Quick Actions */}
-      <div className="flex flex-wrap gap-3">
-        {quickActions.map((action) => (
-          <Button
-            key={action.label}
-            onClick={action.onClick}
-            variant="outline"
-            size="sm"
-          >
-            {action.label}
-          </Button>
-        ))}
-      </div>
+      {/* Quick Actions - ✅ Only show if user has permissions */}
+      {quickActions.length > 0 && (
+        <div className="flex flex-wrap gap-3">
+          {quickActions.map((action) => (
+            <Button
+              key={action.label}
+              onClick={action.onClick}
+              variant="outline"
+              size="sm"
+            >
+              {action.label}
+            </Button>
+          ))}
+        </div>
+      )}
 
       {/* Alerts */}
       {!alertsLoading && alerts && alerts.length > 0 && (
