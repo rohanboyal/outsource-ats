@@ -1,51 +1,58 @@
-// src/store/authStore.ts
+// src/store/authStore.ts - COMPLETE WITH ALL METHODS
+
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { User } from '../types';
+
+interface User {
+  id: number;
+  email: string;
+  full_name: string;
+  role: string;
+  is_active: boolean;
+}
 
 interface AuthState {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
-  isAuthenticated: boolean;
-  
-  setAuth: (user: User, accessToken: string, refreshToken: string) => void;
-  clearAuth: () => void;
-  updateUser: (user: User) => void;
+  setUser: (user: User | null) => void;
+  setTokens: (accessToken: string, refreshToken: string) => void;
+  setAuth: (user: User, accessToken: string, refreshToken: string) => void; // ← ADD THIS
+  logout: () => void;
+  isAuthenticated: () => boolean;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       accessToken: null,
       refreshToken: null,
-      isAuthenticated: false,
 
-      setAuth: (user, accessToken, refreshToken) => {
+      setUser: (user) => set({ user }),
+
+      setTokens: (accessToken, refreshToken) => {
+        set({ accessToken, refreshToken });
         localStorage.setItem('access_token', accessToken);
         localStorage.setItem('refresh_token', refreshToken);
-        set({
-          user,
-          accessToken,
-          refreshToken,
-          isAuthenticated: true,
-        });
       },
 
-      clearAuth: () => {
+      // ✅ ADD THIS METHOD
+      setAuth: (user, accessToken, refreshToken) => {
+        set({ user, accessToken, refreshToken });
+        localStorage.setItem('access_token', accessToken);
+        localStorage.setItem('refresh_token', refreshToken);
+      },
+
+      logout: () => {
+        set({ user: null, accessToken: null, refreshToken: null });
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
-        set({
-          user: null,
-          accessToken: null,
-          refreshToken: null,
-          isAuthenticated: false,
-        });
       },
 
-      updateUser: (user) => {
-        set({ user });
+      isAuthenticated: () => {
+        const state = get();
+        return !!state.accessToken && !!state.user;
       },
     }),
     {

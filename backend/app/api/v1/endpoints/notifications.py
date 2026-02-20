@@ -23,7 +23,7 @@ router = APIRouter()
 
 class TestEmailRequest(BaseModel):
     to_email: str
-    message: Optional[str] = "This is a test email from OutsourceATS."
+    message: Optional[str] = "This is a test email from KGF HireX."
 
 
 # ============================================================================
@@ -53,7 +53,7 @@ async def send_test_email(
         </p>
         <hr style="border: 1px solid #eef2f8; margin: 24px 0;">
         <p style="color: #9aa3b8; font-size: 13px;">
-          OutsourceATS - Recruitment Management System
+          KGF HireX - Recruitment Management System
         </p>
       </div>
     </body>
@@ -62,7 +62,7 @@ async def send_test_email(
 
     success = email_service.send_email(
         to_emails=[request.to_email],
-        subject="✅ OutsourceATS - Email Configuration Test",
+        subject="✅ KGF HireX - Email Configuration Test",
         html_content=html_content,
     )
 

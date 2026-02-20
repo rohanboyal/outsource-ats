@@ -1,28 +1,26 @@
-// src/components/layout/AuthLayout.tsx
+// src/components/layout/AuthLayout.tsx - MODULARIZED VERSION
+
 import { Outlet } from 'react-router-dom';
+import { AuthBrandPanel } from '../auth/AuthBrandPanel';
+import { AuthFormPanel } from '../auth/AuthFormPanel';
 
 export function AuthLayout() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      <div className="flex min-h-screen items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          {/* Logo */}
-          <div className="mb-8 text-center">
-            <h1 className="text-4xl font-bold text-primary">OutsourceATS</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Applicant Tracking System
-            </p>
-          </div>
-
-          {/* Content */}
-          <Outlet />
-
-          {/* Footer */}
-          <p className="mt-8 text-center text-xs text-muted-foreground">
-            © 2026 OutsourceATS. All rights reserved.
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#080a0f] flex overflow-hidden relative">
+      {/* Global ambient light effects */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute top-[-20%] left-[-10%] w-[700px] h-[700px] bg-violet-700/20 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-20%] right-[20%] w-[600px] h-[600px] bg-indigo-600/15 rounded-full blur-[100px]" />
+        <div className="absolute top-[30%] right-[-5%] w-[400px] h-[400px] bg-amber-500/10 rounded-full blur-[90px]" />
       </div>
+
+      {/* Left Panel - Brand */}
+      <AuthBrandPanel />
+
+      {/* Right Panel - Form */}
+      <AuthFormPanel>
+        <Outlet />
+      </AuthFormPanel>
     </div>
   );
 }

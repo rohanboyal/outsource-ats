@@ -1,4 +1,4 @@
-// src/App.tsx - WITH ROLE-BASED ROUTING
+// src/App.tsx - LATEST VERSION WITH PROFILE ROUTE
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryProvider } from './providers/QueryProvider';
 import { Toaster } from 'sonner';
@@ -9,9 +9,11 @@ import { MainLayout } from './components/layout/MainLayout';
 import { ProtectedRoute, AdminRoute, ClientRoute } from './components/auth/ProtectedRoute';
 
 import { LoginPage } from './pages/auth/LoginPage';
-import { RegisterPage } from './pages/auth/RegisterPage';
+// ❌ RegisterPage removed - users are now created by admin only
+// import { RegisterPage } from './pages/auth/RegisterPage';
 
 import { DashboardPage } from './pages/dashboard/DashboardPage';
+import { ProfilePage } from './pages/profile/ProfilePage'; // ← NEW: User Profile
 
 import { ClientsListPage } from './pages/clients/ClientsListPage';
 import { ClientDetailPage } from './pages/clients/ClientDetailPage';
@@ -50,7 +52,10 @@ import { ClientDashboardPage } from './pages/client/ClientDashboardPage';
 import { ClientCandidatesPage } from './pages/client/ClientCandidatesPage';
 import { ClientJDsPage } from './pages/client/ClientJDsPage';
 import { ClientInterviewsPage } from './pages/client/ClientInterviewsPage';
+
+// ✅ Admin Pages
 import { ManageClientUsersPage } from './pages/admin/ManageClientUsersPage';
+import { TeamMembersPage } from './pages/admin/TeamMembersPage';
 
 // Smart redirect based on user role
 function RoleBasedRedirect() {
@@ -68,13 +73,18 @@ function App() {
     <QueryProvider>
       <BrowserRouter>
         <Routes>
-          {/* PUBLIC ROUTES */}
+          {/* ══════════════════════════════════════════
+              PUBLIC ROUTES
+          ══════════════════════════════════════════ */}
           <Route element={<AuthLayout />}>
             <Route path="/login" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+            {/* ❌ REGISTER DISABLED - Redirects to login */}
+            <Route path="/register" element={<Navigate to="/login" replace />} />
           </Route>
 
-          {/* CLIENT PORTAL - Separate Routes */}
+          {/* ══════════════════════════════════════════
+              CLIENT PORTAL - Separate Routes
+          ══════════════════════════════════════════ */}
           <Route path="/client" element={
             <ClientRoute>
               <ClientLayout />
@@ -87,16 +97,27 @@ function App() {
             <Route path="interviews" element={<ClientInterviewsPage />} />
           </Route>
 
-          {/* MAIN APP - Protected Routes */}
+          {/* ══════════════════════════════════════════
+              MAIN APP - Protected Routes
+          ══════════════════════════════════════════ */}
           <Route element={
             <ProtectedRoute>
               <MainLayout />
             </ProtectedRoute>
           }>
+            {/* Root & Dashboard */}
             <Route path="/" element={<RoleBasedRedirect />} />
             <Route path="/dashboard" element={<DashboardPage />} />
 
-            {/* Clients - Admin, Account Manager, BD/Sales, Finance */}
+            {/* ──────────────────────────────────────
+                USER PROFILE (All Users)
+            ────────────────────────────────────── */}
+            <Route path="/profile" element={<ProfilePage />} />
+
+            {/* ──────────────────────────────────────
+                CLIENTS MODULE
+                Access: Admin, Account Manager, BD/Sales, Finance
+            ────────────────────────────────────── */}
             <Route path="/clients" element={
               <ProtectedRoute allowedRoles={['admin', 'account_manager', 'bd_sales', 'finance']}>
                 <ClientsListPage />
@@ -118,7 +139,10 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Pitches - Admin, Account Manager, BD/Sales */}
+            {/* ──────────────────────────────────────
+                PITCHES MODULE
+                Access: Admin, Account Manager, BD/Sales
+            ────────────────────────────────────── */}
             <Route path="/pitches" element={
               <ProtectedRoute allowedRoles={['admin', 'account_manager', 'bd_sales']}>
                 <PitchesListPage />
@@ -140,7 +164,10 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* JDs - All except Client */}
+            {/* ──────────────────────────────────────
+                JOB DESCRIPTIONS MODULE
+                Access: All except Client
+            ────────────────────────────────────── */}
             <Route path="/jds" element={<JDsListPage />} />
             <Route path="/jds/new" element={
               <ProtectedRoute allowedRoles={['admin', 'account_manager']}>
@@ -154,7 +181,10 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Candidates - Admin, Recruiter, Account Manager */}
+            {/* ──────────────────────────────────────
+                CANDIDATES MODULE
+                Access: Admin, Recruiter, Account Manager
+            ────────────────────────────────────── */}
             <Route path="/candidates" element={
               <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager']}>
                 <CandidatesListPage />
@@ -176,7 +206,10 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Applications - Admin, Recruiter, Account Manager, Finance */}
+            {/* ──────────────────────────────────────
+                APPLICATIONS MODULE
+                Access: Admin, Recruiter, Account Manager, Finance
+            ────────────────────────────────────── */}
             <Route path="/applications" element={
               <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager', 'finance']}>
                 <ApplicationsListPage />
@@ -198,7 +231,10 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Interviews - Admin, Recruiter, Account Manager, Finance */}
+            {/* ──────────────────────────────────────
+                INTERVIEWS MODULE
+                Access: Admin, Recruiter, Account Manager, Finance
+            ────────────────────────────────────── */}
             <Route path="/interviews" element={
               <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager', 'finance']}>
                 <InterviewsListPage />
@@ -220,7 +256,10 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Offers - Admin, Recruiter, Account Manager, Finance */}
+            {/* ──────────────────────────────────────
+                OFFERS MODULE
+                Access: Admin, Recruiter, Account Manager, Finance
+            ────────────────────────────────────── */}
             <Route path="/offers" element={
               <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager', 'finance']}>
                 <OffersListPage />
@@ -242,7 +281,10 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Joinings - Admin, Recruiter, Account Manager, Finance */}
+            {/* ──────────────────────────────────────
+                JOININGS MODULE
+                Access: Admin, Recruiter, Account Manager, Finance
+            ────────────────────────────────────── */}
             <Route path="/joinings" element={
               <ProtectedRoute allowedRoles={['admin', 'recruiter', 'account_manager', 'finance']}>
                 <JoiningsListPage />
@@ -264,18 +306,33 @@ function App() {
               </ProtectedRoute>
             } />
 
-            {/* Admin Only - Client Users Management */}
+            {/* ══════════════════════════════════════════
+                ADMIN ONLY ROUTES
+            ══════════════════════════════════════════ */}
+            
+            {/* Client Portal Users Management */}
             <Route path="/admin/client-users" element={
               <AdminRoute>
                 <ManageClientUsersPage />
               </AdminRoute>
             } />
 
+            {/* Team Members Management */}
+            <Route path="/admin/team" element={
+              <AdminRoute>
+                <TeamMembersPage />
+              </AdminRoute>
+            } />
+
+            {/* ──────────────────────────────────────
+                CATCH ALL - Role-based redirect
+            ────────────────────────────────────── */}
             <Route path="*" element={<RoleBasedRedirect />} />
           </Route>
         </Routes>
       </BrowserRouter>
 
+      {/* Global Toast Notifications */}
       <Toaster position="top-right" richColors />
     </QueryProvider>
   );

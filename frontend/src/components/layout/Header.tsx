@@ -1,140 +1,120 @@
-// src/components/layout/Header.tsx
-import { useState, useRef, useEffect } from 'react';
+// src/components/layout/Header.tsx - FIXED TYPESCRIPT ERROR
+
 import { useNavigate } from 'react-router-dom';
-import { Menu, Bell, User, LogOut, Settings, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '../../store/authStore';
+import { LogOut, User, Users, Settings } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
-import { toast } from 'sonner';
-
-interface HeaderProps {
-  onMenuClick: () => void;
-}
-
-export function Header({ onMenuClick }: HeaderProps) {
+export function Header() {
   const navigate = useNavigate();
-  const { user, clearAuth } = useAuthStore();
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const { user, logout } = useAuthStore();
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Close menu on outside click
+  // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowUserMenu(false);
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
       }
     }
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleLogout = () => {
-    clearAuth();
-    toast.success('Logged out successfully');
+    logout();
     navigate('/login');
   };
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
   return (
-    <header className="sticky top-0 z-30 h-16 border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-full items-center justify-between px-4 sm:px-6">
-        {/* Left side */}
-        <div className="flex items-center gap-4">
-          {/* Mobile menu button */}
-          <button
-            onClick={onMenuClick}
-            className="lg:hidden p-2 hover:bg-accent rounded-md"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-
-          {/* Page title - can be dynamic based on route */}
-          <div>
-            <h1 className="text-lg font-semibold">Dashboard</h1>
-          </div>
+    <header className="bg-card border-b border-border px-6 py-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold">
+            Welcome back, {user?.full_name}
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            {user?.role && (
+              <span className="capitalize">
+                {user.role.replace('_', ' ')}
+              </span>
+            )}
+          </p>
         </div>
 
-        {/* Right side */}
-        <div className="flex items-center gap-2">
-          {/* Notifications */}
+        {/* User Menu */}
+        <div className="relative" ref={dropdownRef}>
           <button
-            className="relative p-2 hover:bg-accent rounded-md"
-            onClick={() => toast.info('Notifications coming soon!')}
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-muted transition-colors"
           >
-            <Bell className="h-5 w-5" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <span className="text-sm font-semibold text-primary">
+                {user?.full_name?.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div className="text-left">
+              <div className="text-sm font-medium">{user?.full_name}</div>
+              <div className="text-xs text-muted-foreground">{user?.email}</div>
+            </div>
           </button>
 
-          {/* User menu */}
-          <div className="relative" ref={menuRef}>
-            <button
-              onClick={() => setShowUserMenu(!showUserMenu)}
-              className="flex items-center gap-2 p-2 hover:bg-accent rounded-md"
-            >
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground text-sm font-medium">
-                {user ? getInitials(user.full_name) : 'U'}
-              </div>
-              <div className="hidden sm:block text-left">
-                <p className="text-sm font-medium">{user?.full_name}</p>
-                <p className="text-xs text-muted-foreground capitalize">
-                  {user?.role.replace('_', ' ')}
-                </p>
-              </div>
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
-            </button>
+          {/* Dropdown Menu */}
+          {isDropdownOpen && (
+            <div className="absolute right-0 mt-2 w-56 bg-card border border-border rounded-lg shadow-lg py-2 z-50">
+              {/* Profile */}
+              <button
+                onClick={() => {
+                  navigate('/profile');
+                  setIsDropdownOpen(false);
+                }}
+                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
+              >
+                <User className="h-4 w-4" />
+                My Profile
+              </button>
 
-            {/* Dropdown menu */}
-            {showUserMenu && (
-              <div className="absolute right-0 mt-2 w-56 rounded-md border border-border bg-card shadow-lg">
-                <div className="p-3 border-b border-border">
-                  <p className="text-sm font-medium">{user?.full_name}</p>
-                  <p className="text-xs text-muted-foreground">{user?.email}</p>
-                </div>
+              {/* Team Members (Admin Only) */}
+              {user?.role === 'admin' && (
+                <button
+                  onClick={() => {
+                    navigate('/admin/team');
+                    setIsDropdownOpen(false);
+                  }}
+                  className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Team Members
+                </button>
+              )}
 
-                <div className="py-1">
-                  <button
-                    onClick={() => {
-                      setShowUserMenu(false);
-                      toast.info('Profile settings coming soon!');
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
-                  >
-                    <User className="h-4 w-4" />
-                    <span>Profile</span>
-                  </button>
+              {/* Client Users (Admin Only) */}
+              {user?.role === 'admin' && (
+                <button
+                  onClick={() => {
+                    navigate('/admin/client-users');
+                    setIsDropdownOpen(false);
+                  }}
+                  className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2"
+                >
+                  <Settings className="h-4 w-4" />
+                  Client Portal Users
+                </button>
+              )}
 
-                  <button
-                    onClick={() => {
-                      setShowUserMenu(false);
-                      toast.info('Settings coming soon!');
-                    }}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm hover:bg-accent"
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span>Settings</span>
-                  </button>
-                </div>
+              <div className="my-2 border-t border-border"></div>
 
-                <div className="border-t border-border py-1">
-                  <button
-                    onClick={handleLogout}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-sm text-destructive hover:bg-accent"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+              {/* Logout */}
+              <button
+                onClick={handleLogout}
+                className="w-full px-4 py-2 text-left hover:bg-muted transition-colors flex items-center gap-2 text-red-600"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

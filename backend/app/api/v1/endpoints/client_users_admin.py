@@ -1,8 +1,4 @@
-"""
-Admin: Create Client Portal Users
-Add these endpoints to: backend/app/api/v1/endpoints/clients.py
-(or create a new file: backend/app/api/v1/endpoints/client_users.py)
-"""
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
@@ -174,7 +170,7 @@ def _send_client_welcome_email(
     <body style="font-family: Arial, sans-serif; background: #f4f6f9; padding: 40px;">
       <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
         <div style="background: linear-gradient(135deg, #1e3a5f 0%, #2d6a9f 100%); padding: 32px 40px; text-align: center;">
-          <div style="font-size: 24px; font-weight: 700; color: white;">Outsource<span style="color: #64b5f6;">ATS</span></div>
+          <div style="font-size: 24px; font-weight: 700; color: white;">KGF <span style="color: #64b5f6;">HireX</span></div>
           <div style="font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 4px;">Client Portal Access</div>
         </div>
         <div style="padding: 40px;">
@@ -202,7 +198,7 @@ def _send_client_welcome_email(
             <div style="color: #78350f; font-size: 13px;">Please change your password after your first login.</div>
           </div>
           <p style="color: #444; line-height: 1.7;">If you have any issues accessing the portal, please contact your recruitment team.</p>
-          <p style="margin-top: 24px; color: #444;">Best regards,<br/><strong>OutsourceATS Team</strong></p>
+          <p style="margin-top: 24px; color: #444;">Best regards,<br/><strong>KGF HireX Team</strong></p>
         </div>
       </div>
     </body>
@@ -210,6 +206,6 @@ def _send_client_welcome_email(
     """
     email_service.send_email(
         to_emails=[to_email],
-        subject=f"Welcome to OutsourceATS Client Portal - {company_name}",
+        subject=f"Welcome to KGF HireX Client Portal - {company_name}",
         html_content=html,
     )

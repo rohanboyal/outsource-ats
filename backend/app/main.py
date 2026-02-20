@@ -9,6 +9,9 @@ import uvicorn
 from app.core.config import settings
 from app.api.v1.router import api_router
 
+from app.api.v1.endpoints import setup, team_users
+from app.api.v1.endpoints import profile, activity
+
 
 # ------------------------------------------------------------------
 # Create FastAPI app
@@ -68,7 +71,10 @@ async def health_check():
 # API ROUTES (AFTER CORS)
 # ------------------------------------------------------------------
 app.include_router(api_router, prefix="/api/v1")
-
+app.include_router(setup.router, prefix="/api/v1", tags=["setup"])
+app.include_router(team_users.router, prefix="/api/v1/admin", tags=["team-users"])
+app.include_router(profile.router, prefix="/api/v1", tags=["profile"])
+app.include_router(activity.router, prefix="/api/v1", tags=["activity"])
 
 # ------------------------------------------------------------------
 # Global exception handler
