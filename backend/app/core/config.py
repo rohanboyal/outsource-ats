@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     # ------------------------------------------------------------------
     # Application
     # ------------------------------------------------------------------
-    APP_NAME: str = Field(default="OutsourceATS")
+    APP_NAME: str = Field(default="KGF HireX")
     APP_VERSION: str = Field(default="1.0.0")
     ENVIRONMENT: str = Field(
         default="development",
@@ -73,7 +73,7 @@ class Settings(BaseSettings):
     EMAIL_USERNAME: str = "rohanb220303@gmail.com"
     EMAIL_PASSWORD: str = "akxv vznm lwya esqn"
     EMAIL_FROM: str = "rohanb220303@gmail.com"
-    EMAIL_FROM_NAME: str = "OutsourceATS"
+    EMAIL_FROM_NAME: str = "KGF HireX"
     EMAIL_ENABLED: bool = True
     # ------------------------------------------------------------------
     # Pagination

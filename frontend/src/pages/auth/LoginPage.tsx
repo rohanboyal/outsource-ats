@@ -1,6 +1,7 @@
-// src/pages/auth/LoginPage.tsx - FIXED WITH CLIENT REDIRECT
+// src/pages/auth/LoginPage.tsx - REMOVED REGISTER LINK
+
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,9 +10,9 @@ import { Mail, Lock, AlertCircle } from 'lucide-react';
 
 import { authApi } from '../../api/auth';
 import { useAuthStore } from '../../store/authStore';
-import { Button } from '../../components/ui/Button';
-import { Input } from '../../components/ui/Input';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../../components/ui/Card';
+import { AuthInput } from '../../components/auth/AuthInput';
+import { AuthButton } from '../../components/auth/AuthButton';
+import { FormHeader } from '../../components/auth/FormHeader';
 
 // Validation schema
 const loginSchema = z.object({
@@ -40,42 +41,27 @@ export function LoginPage() {
     setApiError('');
 
     try {
-      // Login API call
       const response = await authApi.login(data);
-
-      // VERY IMPORTANT — store token first
       localStorage.setItem('access_token', response.access_token);
-
-      // Get user details
       const user = await authApi.getCurrentUser();
-
-      // Save auth state
       setAuth(user, response.access_token, response.refresh_token);
-
-      // Success notification
       toast.success(`Welcome back, ${user.full_name}!`);
 
-      // ✅ FIX: Redirect based on user role
+      // Role-based redirect
       if (user.role === 'client') {
         navigate('/client/dashboard', { replace: true });
       } else {
         navigate('/dashboard', { replace: true });
       }
     } catch (error: any) {
-      console.error('Login error:', error);
-
-      // Handle error response
       let errorMessage = 'Invalid email or password. Please try again.';
-
       if (error.response?.data?.detail) {
-        // If detail is an array (422 validation errors)
         if (Array.isArray(error.response.data.detail)) {
           errorMessage = error.response.data.detail.map((err: any) => err.msg).join(', ');
         } else if (typeof error.response.data.detail === 'string') {
           errorMessage = error.response.data.detail;
         }
       }
-
       setApiError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -84,80 +70,72 @@ export function LoginPage() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Welcome Back</CardTitle>
-        <CardDescription>Sign in to your account to continue</CardDescription>
-      </CardHeader>
+    <div>
+      {/* Mobile header */}
+      <div className="lg:hidden mb-8">
+        <FormHeader />
+      </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <CardContent className="space-y-4">
-          {/* API Error Alert */}
-          {apiError && (
-            <div className="flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive">
-              <AlertCircle className="h-4 w-4" />
-              <span>{apiError}</span>
-            </div>
-          )}
+      {/* Error Alert */}
+      {apiError && (
+        <div className="mb-6 flex items-start gap-3 rounded-xl bg-red-500/10 border border-red-500/20 p-4">
+          <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+          <p className="text-sm text-red-300 leading-snug">{apiError}</p>
+        </div>
+      )}
 
-          {/* Email Field */}
-          <div className="relative">
-            <Mail className="absolute left-3 top-10 h-5 w-5 text-muted-foreground" />
-            <Input
-              label="Email"
-              type="email"
-              placeholder="you@example.com"
-              className="pl-10"
-              error={errors.email?.message}
-              {...register('email')}
-            />
-          </div>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {/* Email */}
+        <AuthInput
+          label="Email"
+          type="email"
+          placeholder="you@company.com"
+          autoComplete="email"
+          icon={Mail}
+          error={errors.email?.message}
+          {...register('email')}
+        />
 
-          {/* Password Field */}
-          <div className="relative">
-            <Lock className="absolute left-3 top-10 h-5 w-5 text-muted-foreground" />
-            <Input
-              label="Password"
-              type="password"
-              placeholder="••••••••"
-              className="pl-10"
-              error={errors.password?.message}
-              {...register('password')}
-            />
-          </div>
-
-          {/* Forgot Password Link */}
+        {/* Password */}
+        <div className="space-y-2">
+          <AuthInput
+            label="Password"
+            type="password"
+            placeholder="••••••••••••"
+            autoComplete="current-password"
+            icon={Lock}
+            showPasswordToggle
+            error={errors.password?.message}
+            {...register('password')}
+          />
+          {/* Forgot password link */}
           <div className="text-right">
             <button
               type="button"
-              className="text-sm text-primary hover:underline"
-              onClick={() => toast.info('Password reset coming soon!')}
+              className="text-xs text-slate-500 hover:text-amber-400 transition-colors"
+              onClick={() => toast.info('Please contact your administrator to reset your password.')}
             >
               Forgot password?
             </button>
           </div>
-        </CardContent>
+        </div>
 
-        <CardFooter className="flex flex-col gap-4">
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            className="w-full"
-            isLoading={isLoading}
-            disabled={isLoading}
-          >
-            {isLoading ? 'Signing in...' : 'Sign In'}
-          </Button>
+        {/* Submit Button */}
+        <div className="pt-2">
+          <AuthButton isLoading={isLoading} loadingText="Signing in…">
+            Sign In
+          </AuthButton>
+        </div>
 
-          {/* Register Link */}
-          <p className="text-center text-sm text-muted-foreground">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-primary hover:underline font-medium">
-              Sign up
-            </Link>
-          </p>
-        </CardFooter>
+        {/* ❌ REMOVED: Register Link */}
+        {/* Info message instead */}
+        <p className="text-center text-sm text-slate-500 pt-1">
+          Need an account?{' '}
+          <span className="text-amber-400 font-semibold">
+            Contact your administrator
+          </span>
+        </p>
       </form>
-    </Card>
+    </div>
   );
 }
