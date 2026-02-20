@@ -1,4 +1,5 @@
-// src/pages/client/ClientLayout.tsx - REBRANDED TO KGF HireX
+// src/pages/client/ClientLayout.tsx - FIXED WITH CORRECT LOGOUT METHOD
+
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { LayoutDashboard, Users, FileText, Calendar, LogOut } from 'lucide-react';
@@ -11,12 +12,12 @@ const navItems = [
 ];
 
 export function ClientLayout() {
-  const { user, clearAuth } = useAuthStore();
+  const { user, logout } = useAuthStore(); // ✅ CHANGED FROM clearAuth TO logout
   const navigate = useNavigate();
   const location = useLocation();
 
   const handleLogout = () => {
-    clearAuth();
+    logout(); // ✅ CHANGED FROM clearAuth() TO logout()
     navigate('/login');
   };
 
@@ -24,7 +25,7 @@ export function ClientLayout() {
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
-        {/* Logo - ✅ UPDATED TO KGF HireX */}
+        {/* Logo - KGF HireX */}
         <div className="px-6 py-5 border-b border-gray-200">
           <div className="text-xl font-bold text-[#1e3a5f]">
             KGF <span className="text-blue-500">HireX</span>

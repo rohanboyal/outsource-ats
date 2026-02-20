@@ -1,4 +1,5 @@
-// src/components/layout/MainLayout.tsx - FIXED WITH CLIENT GUARD
+// src/components/layout/MainLayout.tsx - FIXED TYPESCRIPT ERROR
+
 import { useState } from 'react';
 import { Outlet, Navigate } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
@@ -9,7 +10,7 @@ export function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user } = useAuthStore();
 
-  // ✅ FIX: Prevent clients from accessing main layout
+  // ✅ Prevent clients from accessing main layout
   // Redirect them to their client portal instead
   if (user?.role === 'client') {
     return <Navigate to="/client/dashboard" replace />;
@@ -22,8 +23,8 @@ export function MainLayout() {
 
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header */}
-        <Header onMenuClick={() => setSidebarOpen(true)} />
+        {/* Header - ✅ REMOVED onMenuClick prop (not needed) */}
+        <Header />
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">

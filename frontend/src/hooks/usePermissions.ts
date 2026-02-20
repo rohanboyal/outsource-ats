@@ -37,7 +37,7 @@ export function usePermissions() {
      * Check if current user is an admin
      */
     isAdmin: (): boolean => {
-      return userRole === 'admin' || user?.is_admin === true;
+      return userRole === 'admin';
     },
 
     /**
